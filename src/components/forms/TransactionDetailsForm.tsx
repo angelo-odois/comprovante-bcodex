@@ -73,6 +73,54 @@ export const TransactionDetailsForm: React.FC<TransactionDetailsFormProps> = ({
           </div>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="transactionId">ID da Transação *</Label>
+            <Input
+              id="transactionId"
+              value={formData.id || ''}
+              onChange={(e) => onInputChange('id', '', e.target.value)}
+              placeholder="Ex: TXN001234567"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="transactionDateTime">Data e Hora da Transação *</Label>
+            <Input
+              id="transactionDateTime"
+              type="datetime-local"
+              value={formData.dataHora ? new Date(formData.dataHora).toISOString().slice(0, 16) : ''}
+              onChange={(e) => onInputChange('dataHora', '', new Date(e.target.value))}
+              required
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="endToEnd">EndToEnd *</Label>
+            <Input
+              id="endToEnd"
+              value={formData.transacao?.endToEnd || ''}
+              onChange={(e) => onInputChange('transacao', 'endToEnd', e.target.value)}
+              placeholder="Ex: E12345678202412345678901234567890"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="autenticacao">Autenticação *</Label>
+            <Input
+              id="autenticacao"
+              value={formData.transacao?.numeroAutenticacao || ''}
+              onChange={(e) => onInputChange('transacao', 'numeroAutenticacao', e.target.value)}
+              placeholder="Ex: AUTH789123456789"
+              required
+            />
+          </div>
+        </div>
+
         <div>
           <Label htmlFor="descricao">Descrição</Label>
           <Textarea

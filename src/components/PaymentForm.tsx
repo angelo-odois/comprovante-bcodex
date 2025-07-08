@@ -32,17 +32,14 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ onSubmit }) => {
     },
     transacao: {
       numeroAutenticacao: '',
-      numeroProtocolo: '',
+      endToEnd: '',
       descricao: ''
     }
   });
 
-  const generateRandomId = () => Math.random().toString(36).substr(2, 9).toUpperCase();
-  const generateAuth = () => Math.random().toString(36).substr(2, 16).toUpperCase();
-
   const handleInputChange = (section: string, field: string, value: string | number | Date) => {
     setFormData(prev => {
-      if (section === 'valor' || section === 'tipo' || section === 'status' || section === 'dataHora') {
+      if (section === 'valor' || section === 'tipo' || section === 'status' || section === 'dataHora' || section === 'id') {
         return {
           ...prev,
           [section]: value
@@ -67,11 +64,8 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ onSubmit }) => {
     
     const paymentData: PaymentData = {
       ...formData,
-      id: generateRandomId(),
       transacao: {
-        ...formData.transacao!,
-        numeroAutenticacao: formData.transacao?.numeroAutenticacao || generateAuth(),
-        numeroProtocolo: formData.transacao?.numeroProtocolo || generateAuth()
+        ...formData.transacao!
       }
     } as PaymentData;
 

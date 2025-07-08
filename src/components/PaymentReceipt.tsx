@@ -114,8 +114,8 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
                   <span className="font-mono">{data.id}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Protocolo</span>
-                  <span className="font-mono text-xs">{data.transacao.numeroProtocolo}</span>
+                  <span className="text-muted-foreground">EndToEnd</span>
+                  <span className="font-mono text-xs">{data.transacao.endToEnd}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Autenticação</span>

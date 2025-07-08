@@ -31,7 +31,7 @@ export const MockReceiptDemo: React.FC = () => {
     },
     transacao: {
       numeroAutenticacao: 'AUTH789123456789',
-      numeroProtocolo: 'PROT456789123456',
+      endToEnd: 'E12345678202412345678901234567890',
       descricao: 'Pagamento de serviços prestados - Ref: NF 001234'
     }
   };

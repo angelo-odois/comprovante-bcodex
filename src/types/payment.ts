@@ -28,7 +28,7 @@ export interface PaymentData {
   // Dados da transação
   transacao: {
     numeroAutenticacao: string;
-    numeroProtocolo: string;
+    endToEnd: string;
     descricao: string;
     taxas?: number;
   };
