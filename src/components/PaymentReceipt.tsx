@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Printer, Share2 } from 'lucide-react';
 import { PaymentData, CompanyLogo } from '@/types/payment';
-import { generateEnhancedPDF, downloadEnhancedPDF } from '@/utils/enhancedPdfGenerator';
+import { generateEnhancedPDF, downloadEnhancedPDF } from '@/utils/pdf';
 
 interface PaymentReceiptProps {
   data: PaymentData;

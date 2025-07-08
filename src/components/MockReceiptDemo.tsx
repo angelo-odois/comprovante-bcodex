@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { PaymentReceipt } from './PaymentReceipt';
 import { PaymentData, CompanyLogo } from '@/types/payment';
