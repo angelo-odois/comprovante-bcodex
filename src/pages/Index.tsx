@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PaymentForm } from '@/components/PaymentForm';
 import { PaymentReceipt } from '@/components/PaymentReceipt';
@@ -8,6 +7,7 @@ import { generatePDF, downloadPDF } from '@/utils/pdfGenerator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Receipt, Settings, FileText } from 'lucide-react';
+import { MockReceiptDemo } from '@/components/MockReceiptDemo';
 
 const Index = () => {
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
@@ -49,10 +49,14 @@ const Index = () => {
 
         {!paymentData ? (
           <Tabs defaultValue="form" className="max-w-4xl mx-auto">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="form" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 Dados do Pagamento
+              </TabsTrigger>
+              <TabsTrigger value="demo" className="flex items-center gap-2">
+                <Receipt className="h-4 w-4" />
+                Modelo PDF
               </TabsTrigger>
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
@@ -72,6 +76,10 @@ const Index = () => {
                   <PaymentForm onSubmit={handlePaymentSubmit} />
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="demo">
+              <MockReceiptDemo />
             </TabsContent>
 
             <TabsContent value="settings">
