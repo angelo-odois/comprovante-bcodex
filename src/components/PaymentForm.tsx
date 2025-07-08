@@ -43,15 +43,25 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ onSubmit }) => {
   const generateAuth = () => Math.random().toString(36).substr(2, 16).toUpperCase();
 
   const handleInputChange = (section: string, field: string, value: string | number | Date) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: section === 'valor' || section === 'tipo' || section === 'status' || section === 'dataHora' 
-        ? value 
-        : {
-            ...prev[section as keyof PaymentData],
-            [field]: value
-          }
-    }));
+    setFormData(prev => {
+      if (section === 'valor' || section === 'tipo' || section === 'status' || section === 'dataHora') {
+        return {
+          ...prev,
+          [section]: value
+        };
+      }
+      
+      // Garantir que a seção existe como objeto antes de fazer spread
+      const currentSection = prev[section as keyof PaymentData] as Record<string, any> || {};
+      
+      return {
+        ...prev,
+        [section]: {
+          ...currentSection,
+          [field]: value
+        }
+      };
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
