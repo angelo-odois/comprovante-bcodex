@@ -49,4 +49,6 @@ export interface PaymentData {
 export interface CompanyLogo {
   url: string;
   name: string;
+  size?: number;
+  type?: string;
 }

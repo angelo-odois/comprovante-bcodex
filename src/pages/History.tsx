@@ -79,14 +79,14 @@ export default function History() {
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-lg">
-                      {receipt.beneficiary_name || 'Comprovante de Pagamento'}
+                      {receipt.paymentData.beneficiario.nome || 'Comprovante de Pagamento'}
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
                       ID: {receipt.id}
                     </p>
                   </div>
-                  <Badge className={getStatusColor(receipt.status)}>
-                    {receipt.status}
+                  <Badge className={getStatusColor(receipt.paymentData.status)}>
+                    {receipt.paymentData.status}
                   </Badge>
                 </div>
               </CardHeader>
@@ -94,29 +94,29 @@ export default function History() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Valor</p>
-                    <p className="text-lg font-bold">{formatCurrency(receipt.amount)}</p>
+                    <p className="text-lg font-bold">{formatCurrency(receipt.paymentData.valor)}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Tipo</p>
-                    <p className="font-medium">{receipt.payment_type}</p>
+                    <p className="font-medium">{receipt.paymentData.tipo}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Data</p>
-                    <p className="font-medium">{formatDateTime(receipt.payment_date)}</p>
+                    <p className="font-medium">{formatDateTime(receipt.paymentData.dataHora.toISOString())}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Pagador</p>
-                    <p className="font-medium">{receipt.payer_name}</p>
-                    <p className="text-sm text-muted-foreground">{receipt.payer_bank}</p>
+                    <p className="font-medium">{receipt.paymentData.pagador.nome}</p>
+                    <p className="text-sm text-muted-foreground">{receipt.paymentData.pagador.banco}</p>
                   </div>
-                  {receipt.beneficiary_name && (
+                  {receipt.paymentData.beneficiario.nome && (
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Beneficiário</p>
-                      <p className="font-medium">{receipt.beneficiary_name}</p>
-                      <p className="text-sm text-muted-foreground">{receipt.beneficiary_bank}</p>
+                      <p className="font-medium">{receipt.paymentData.beneficiario.nome}</p>
+                      <p className="text-sm text-muted-foreground">{receipt.paymentData.beneficiario.banco}</p>
                     </div>
                   )}
                 </div>

@@ -11,15 +11,15 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { receipts, loading } = useReceipts();
 
-  const totalAmount = receipts.reduce((sum, receipt) => sum + receipt.amount, 0);
+  const totalAmount = receipts.reduce((sum, receipt) => sum + receipt.paymentData.valor, 0);
   const thisMonthCount = receipts.filter(receipt => {
-    const receiptDate = new Date(receipt.payment_date);
+    const receiptDate = new Date(receipt.paymentData.dataHora);
     const now = new Date();
     return receiptDate.getMonth() === now.getMonth() && 
            receiptDate.getFullYear() === now.getFullYear();
   }).length;
 
-  const approvedCount = receipts.filter(receipt => receipt.status === 'Aprovado').length;
+  const approvedCount = receipts.filter(receipt => receipt.paymentData.status === 'Aprovado').length;
   const recentReceipts = receipts.slice(0, 5);
 
   const formatCurrency = (value: number) => {
@@ -189,20 +189,20 @@ export default function Dashboard() {
                 <div key={receipt.id} className="flex justify-between items-center p-4 hover:bg-accent/50 transition-colors">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <p className="font-medium">{receipt.beneficiary_name || 'Pagamento'}</p>
-                      <Badge className={getStatusColor(receipt.status)}>
-                        {receipt.status}
+                      <p className="font-medium">{receipt.paymentData.beneficiario.nome || 'Pagamento'}</p>
+                      <Badge className={getStatusColor(receipt.paymentData.status)}>
+                        {receipt.paymentData.status}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{formatCurrency(receipt.amount)}</span>
-                      <span>{receipt.payment_type}</span>
-                      <span>{new Date(receipt.payment_date).toLocaleDateString('pt-BR')}</span>
+                      <span>{formatCurrency(receipt.paymentData.valor)}</span>
+                      <span>{receipt.paymentData.tipo}</span>
+                      <span>{new Date(receipt.paymentData.dataHora).toLocaleDateString('pt-BR')}</span>
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground text-right">
-                    <p>{new Date(receipt.created_at).toLocaleDateString('pt-BR')}</p>
-                    <p>{new Date(receipt.created_at).toLocaleTimeString('pt-BR', { 
+                    <p>{new Date(receipt.createdAt).toLocaleDateString('pt-BR')}</p>
+                    <p>{new Date(receipt.createdAt).toLocaleTimeString('pt-BR', { 
                       hour: '2-digit', 
                       minute: '2-digit' 
                     })}</p>

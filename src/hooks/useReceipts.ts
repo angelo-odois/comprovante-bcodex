@@ -78,7 +78,9 @@ export const useReceipts = () => {
 
         const logo = receipt.company_logos ? {
           url: receipt.company_logos.url,
-          name: receipt.company_logos.name
+          name: receipt.company_logos.name,
+          size: receipt.company_logos.file_size,
+          type: receipt.company_logos.file_type
         } : undefined;
 
         return {
@@ -121,8 +123,8 @@ export const useReceipts = () => {
             user_id: user.id,
             name: logo.name,
             url: logo.url,
-            file_size: logo.size,
-            file_type: logo.type
+            file_size: logo.size || null,
+            file_type: logo.type || null
           })
           .select()
           .single();
