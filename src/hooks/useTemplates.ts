@@ -21,14 +21,13 @@ export const useTemplates = () => {
       const { data, error } = await supabase
         .from('receipt_templates')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Erro ao buscar templates:', error);
         throw error;
       }
-      
-      console.log('Templates recebidos do banco:', data);
       
       const formattedTemplates: ReceiptTemplate[] = (data || []).map(template => ({
         id: template.id,
@@ -38,11 +37,23 @@ export const useTemplates = () => {
         isDefault: template.is_default || false,
         createdAt: new Date(template.created_at),
         updatedAt: new Date(template.updated_at),
-        config: template.config as any,
-        defaultData: template.default_data as any,
+        config: template.config || {
+          showLogo: true,
+          showPayer: false,
+          showBeneficiary: true,
+          showDescription: true,
+          showFees: false,
+          customFields: [],
+          styling: {
+            headerColor: 'hsl(var(--primary))',
+            accentColor: 'hsl(var(--accent))',
+            fontSize: 'medium',
+            layout: 'standard'
+          }
+        },
+        defaultData: template.default_data || {},
       }));
       
-      console.log('Templates formatados:', formattedTemplates);
       setTemplates(formattedTemplates);
     } catch (error: any) {
       console.error('Erro ao carregar templates:', error);
@@ -62,20 +73,15 @@ export const useTemplates = () => {
     }
 
     try {
-      console.log('Iniciando salvamento do template:', template);
-
-      // Converter objetos complexos para JSON compatível
       const templateData = {
         user_id: user.id,
         name: template.name,
         description: template.description,
         type: template.type,
         is_default: template.isDefault,
-        config: JSON.parse(JSON.stringify(template.config)), // Converte para JSON puro
-        default_data: JSON.parse(JSON.stringify(template.defaultData)), // Converte para JSON puro
+        config: template.config,
+        default_data: template.defaultData,
       };
-
-      console.log('Dados do template preparados para inserção:', templateData);
 
       const { data, error } = await supabase
         .from('receipt_templates')
@@ -88,8 +94,20 @@ export const useTemplates = () => {
         throw error;
       }
 
-      console.log('Template salvo com sucesso:', data);
-      await fetchTemplates();
+      // Atualizar lista local sem refazer consulta
+      const newTemplate: ReceiptTemplate = {
+        id: data.id,
+        name: data.name,
+        description: data.description || '',
+        type: data.type as 'PIX' | 'TED' | 'DOC' | 'Boleto' | 'Cartão',
+        isDefault: data.is_default || false,
+        createdAt: new Date(data.created_at),
+        updatedAt: new Date(data.updated_at),
+        config: data.config,
+        defaultData: data.default_data || {},
+      };
+      
+      setTemplates(prev => [newTemplate, ...prev]);
       return data;
     } catch (error: any) {
       console.error('Erro ao salvar template:', error);
@@ -114,23 +132,24 @@ export const useTemplates = () => {
       if (updates.description !== undefined) updateData.description = updates.description;
       if (updates.type !== undefined) updateData.type = updates.type;
       if (updates.isDefault !== undefined) updateData.is_default = updates.isDefault;
-      if (updates.config !== undefined) updateData.config = JSON.parse(JSON.stringify(updates.config));
-      if (updates.defaultData !== undefined) updateData.default_data = JSON.parse(JSON.stringify(updates.defaultData));
-
-      console.log('Atualizando template:', id, updateData);
+      if (updates.config !== undefined) updateData.config = updates.config;
+      if (updates.defaultData !== undefined) updateData.default_data = updates.defaultData;
 
       const { error } = await supabase
         .from('receipt_templates')
         .update(updateData)
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) {
         console.error('Erro do Supabase ao atualizar template:', error);
         throw error;
       }
 
-      console.log('Template atualizado com sucesso');
-      await fetchTemplates();
+      // Atualizar lista local
+      setTemplates(prev => prev.map(template => 
+        template.id === id ? { ...template, ...updates, updatedAt: new Date() } : template
+      ));
     } catch (error: any) {
       console.error('Erro ao atualizar template:', error);
       toast({
@@ -148,20 +167,19 @@ export const useTemplates = () => {
     }
 
     try {
-      console.log('Deletando template:', id);
-      
       const { error } = await supabase
         .from('receipt_templates')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) {
         console.error('Erro do Supabase ao deletar template:', error);
         throw error;
       }
 
-      console.log('Template deletado com sucesso');
-      await fetchTemplates();
+      // Atualizar lista local
+      setTemplates(prev => prev.filter(template => template.id !== id));
     } catch (error: any) {
       console.error('Erro ao remover template:', error);
       toast({
@@ -175,7 +193,7 @@ export const useTemplates = () => {
 
   useEffect(() => {
     fetchTemplates();
-  }, [user]);
+  }, [user?.id]);
 
   return {
     templates,

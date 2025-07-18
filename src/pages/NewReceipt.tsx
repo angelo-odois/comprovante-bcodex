@@ -13,11 +13,13 @@ import { MockReceiptDemo } from '@/components/MockReceiptDemo';
 import { TemplateManager } from '@/components/TemplateManager';
 import { ReceiptTemplate } from '@/types/template';
 import { useReceipts } from '@/hooks/useReceipts';
+import { toast } from '@/hooks/use-toast';
 
 export default function NewReceipt() {
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [companyLogo, setCompanyLogo] = useState<CompanyLogo | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<ReceiptTemplate | null>(null);
+  const [activeTab, setActiveTab] = useState('form');
   const { saveReceipt } = useReceipts();
 
   const handlePaymentSubmit = async (data: PaymentData) => {
@@ -25,23 +27,36 @@ export default function NewReceipt() {
     
     try {
       await saveReceipt(data, undefined, selectedTemplate?.id);
+      toast({
+        title: "Comprovante gerado com sucesso!",
+        description: "Seu comprovante foi criado e salvo.",
+      });
     } catch (error) {
       console.error('Erro ao salvar comprovante:', error);
+      toast({
+        title: "Erro ao salvar comprovante",
+        description: "Ocorreu um erro ao salvar o comprovante.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleTemplateSelect = (template: ReceiptTemplate) => {
     setSelectedTemplate(template);
-    console.log('Template selecionado:', template);
+    toast({
+      title: "Template selecionado",
+      description: `Template "${template.name}" foi selecionado.`,
+    });
   };
 
-  const handleCreateFromTemplate = (template: ReceiptTemplate) => {
+  const handleUseTemplate = (template: ReceiptTemplate) => {
     setSelectedTemplate(template);
-    // Aplicar dados padrão do template se existirem
-    if (template.defaultData && Object.keys(template.defaultData).length > 0) {
-      console.log('Aplicando dados padrão do template:', template.defaultData);
-    }
-    console.log('Criar recibo com template:', template);
+    setActiveTab('form');
+    
+    toast({
+      title: "Template aplicado",
+      description: `Usando template "${template.name}". Configure os dados do pagamento.`,
+    });
   };
 
   const handleDownloadPDF = () => {
@@ -60,6 +75,8 @@ export default function NewReceipt() {
 
   const handleNewReceipt = () => {
     setPaymentData(null);
+    setSelectedTemplate(null);
+    setActiveTab('form');
   };
 
   return (
@@ -74,7 +91,7 @@ export default function NewReceipt() {
       </div>
 
       {!paymentData ? (
-        <Tabs defaultValue="form" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4 h-12 bg-muted/50">
             <TabsTrigger value="form" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <FileText className="h-4 w-4" />
@@ -109,6 +126,14 @@ export default function NewReceipt() {
                     <p className="text-xs text-blue-500 dark:text-blue-300">
                       {selectedTemplate.description}
                     </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedTemplate(null)}
+                      className="mt-2"
+                    >
+                      Remover Template
+                    </Button>
                   </div>
                 )}
               </CardHeader>
@@ -127,7 +152,7 @@ export default function NewReceipt() {
               <div className="bg-background rounded-lg">
                 <TemplateManager
                   onSelectTemplate={handleTemplateSelect}
-                  onCreateReceipt={handleCreateFromTemplate}
+                  onCreateReceipt={handleUseTemplate}
                 />
               </div>
             </div>

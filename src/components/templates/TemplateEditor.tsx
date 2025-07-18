@@ -50,7 +50,7 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
   });
 
   const handleSave = async () => {
-    if (!formData.name || !formData.type) {
+    if (!formData.name?.trim() || !formData.type) {
       toast({
         title: "Erro de validação",
         description: "Nome e tipo do template são obrigatórios.",
@@ -62,14 +62,21 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
     setSaving(true);
     
     try {
-      if (template) {
+      if (template?.id) {
         // Editando template existente
-        await updateTemplate(template.id, formData);
-        onSave({
+        const updatedTemplate: ReceiptTemplate = {
           ...template,
-          ...formData,
+          name: formData.name,
+          description: formData.description || '',
+          type: formData.type,
+          isDefault: formData.isDefault || false,
+          config: formData.config!,
+          defaultData: formData.defaultData || {},
           updatedAt: new Date()
-        } as ReceiptTemplate);
+        };
+        
+        await updateTemplate(template.id, formData);
+        onSave(updatedTemplate);
         
         toast({
           title: "Template atualizado",
@@ -89,12 +96,13 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
         const savedTemplate = await saveTemplate(newTemplateData);
         
         if (savedTemplate) {
-          onSave({
+          const fullTemplate: ReceiptTemplate = {
             id: savedTemplate.id,
             createdAt: new Date(savedTemplate.created_at),
             updatedAt: new Date(savedTemplate.updated_at),
             ...newTemplateData
-          });
+          };
+          onSave(fullTemplate);
         }
         
         toast({
@@ -137,6 +145,8 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
     }));
   };
 
+  const isFormValid = formData.name?.trim() && formData.type;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -153,13 +163,13 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
             <X className="h-4 w-4 mr-2" />
             Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={saving || !formData.name || !formData.type}>
+          <Button onClick={handleSave} disabled={saving || !isFormValid}>
             {saving ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <Save className="h-4 w-4 mr-2" />
             )}
-            Salvar
+            {saving ? 'Salvando...' : 'Salvar'}
           </Button>
         </div>
       </div>
@@ -172,7 +182,7 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="name">Nome do Template</Label>
+              <Label htmlFor="name">Nome do Template *</Label>
               <Input
                 id="name"
                 value={formData.name}
@@ -193,13 +203,13 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
             </div>
             
             <div>
-              <Label htmlFor="type">Tipo de Pagamento</Label>
+              <Label htmlFor="type">Tipo de Pagamento *</Label>
               <Select
                 value={formData.type}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as any }))}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="PIX">PIX</SelectItem>

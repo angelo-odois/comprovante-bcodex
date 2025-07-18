@@ -37,6 +37,17 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({
     setActiveTab('preview');
   };
 
+  const handleUseTemplate = (template: ReceiptTemplate) => {
+    // Selecionar o template e chamar a função de criar recibo
+    onSelectTemplate(template);
+    onCreateReceipt(template);
+  };
+
+  const handleTemplateSaved = (template: ReceiptTemplate) => {
+    setActiveTab('list');
+    setEditingTemplate(null);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -68,17 +79,14 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({
             onEdit={handleEditTemplate}
             onPreview={handlePreviewTemplate}
             onSelect={onSelectTemplate}
-            onCreate={onCreateReceipt}
+            onCreate={handleUseTemplate}
           />
         </TabsContent>
 
         <TabsContent value="editor">
           <TemplateEditor
             template={editingTemplate}
-            onSave={(template) => {
-              console.log('Template salvo:', template);
-              setActiveTab('list');
-            }}
+            onSave={handleTemplateSaved}
             onCancel={() => setActiveTab('list')}
           />
         </TabsContent>
@@ -88,7 +96,7 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({
             <TemplatePreview
               template={selectedTemplate}
               onEdit={() => handleEditTemplate(selectedTemplate)}
-              onUse={() => onCreateReceipt(selectedTemplate)}
+              onUse={() => handleUseTemplate(selectedTemplate)}
             />
           )}
         </TabsContent>
