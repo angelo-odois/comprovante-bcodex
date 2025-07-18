@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { ReceiptTemplate } from '@/types/template';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 export const useTemplates = () => {
   const [templates, setTemplates] = useState<ReceiptTemplate[]>([]);
@@ -55,8 +55,8 @@ export const useTemplates = () => {
         description: template.description,
         type: template.type,
         is_default: template.isDefault,
-        config: template.config,
-        default_data: template.defaultData,
+        config: JSON.parse(JSON.stringify(template.config)),
+        default_data: JSON.parse(JSON.stringify(template.defaultData)),
       };
 
       const { data, error } = await supabase
@@ -86,16 +86,18 @@ export const useTemplates = () => {
 
   const updateTemplate = async (id: string, updates: Partial<ReceiptTemplate>) => {
     try {
+      const updateData: any = {};
+      
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.type !== undefined) updateData.type = updates.type;
+      if (updates.isDefault !== undefined) updateData.is_default = updates.isDefault;
+      if (updates.config !== undefined) updateData.config = JSON.parse(JSON.stringify(updates.config));
+      if (updates.defaultData !== undefined) updateData.default_data = JSON.parse(JSON.stringify(updates.defaultData));
+
       const { error } = await supabase
         .from('receipt_templates')
-        .update({
-          name: updates.name,
-          description: updates.description,
-          type: updates.type,
-          is_default: updates.isDefault,
-          config: updates.config,
-          default_data: updates.defaultData,
-        })
+        .update(updateData)
         .eq('id', id);
 
       if (error) throw error;
