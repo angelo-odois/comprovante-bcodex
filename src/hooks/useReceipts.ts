@@ -76,6 +76,15 @@ export const useReceipts = () => {
           };
         }
 
+        // Add card data if it exists
+        if (receipt.card_brand) {
+          paymentData.dadosCartao = {
+            bandeira: receipt.card_brand,
+            ultimosDigitos: receipt.card_last_digits || '',
+            parcelas: receipt.card_installments || 1
+          };
+        }
+
         const logo = receipt.company_logos ? {
           url: receipt.company_logos.url,
           name: receipt.company_logos.name,
@@ -166,6 +175,11 @@ export const useReceipts = () => {
           boleto_fine: paymentData.dadosBoleto.multa,
           boleto_interest: paymentData.dadosBoleto.juros,
           boleto_discount: paymentData.dadosBoleto.descontos
+        }),
+        ...(paymentData.dadosCartao && {
+          card_brand: paymentData.dadosCartao.bandeira,
+          card_last_digits: paymentData.dadosCartao.ultimosDigitos,
+          card_installments: paymentData.dadosCartao.parcelas
         })
       };
 

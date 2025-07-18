@@ -44,6 +44,13 @@ export interface PaymentData {
     juros: number;
     descontos: number;
   };
+
+  // Dados específicos para cartão
+  dadosCartao?: {
+    bandeira: string;
+    ultimosDigitos: string;
+    parcelas: number;
+  };
 }
 
 export interface CompanyLogo {

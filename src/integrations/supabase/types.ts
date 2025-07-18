@@ -147,6 +147,9 @@ export type Database = {
           boleto_fine: number | null
           boleto_interest: number | null
           boleto_payment_date: string | null
+          card_brand: string | null
+          card_installments: number | null
+          card_last_digits: string | null
           created_at: string
           description: string | null
           end_to_end: string | null
@@ -182,6 +185,9 @@ export type Database = {
           boleto_fine?: number | null
           boleto_interest?: number | null
           boleto_payment_date?: string | null
+          card_brand?: string | null
+          card_installments?: number | null
+          card_last_digits?: string | null
           created_at?: string
           description?: string | null
           end_to_end?: string | null
@@ -217,6 +223,9 @@ export type Database = {
           boleto_fine?: number | null
           boleto_interest?: number | null
           boleto_payment_date?: string | null
+          card_brand?: string | null
+          card_installments?: number | null
+          card_last_digits?: string | null
           created_at?: string
           description?: string | null
           end_to_end?: string | null

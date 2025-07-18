@@ -6,6 +6,7 @@ import { TransactionDetailsForm } from '@/components/forms/TransactionDetailsFor
 import { PayerForm } from '@/components/forms/PayerForm';
 import { BeneficiaryForm } from '@/components/forms/BeneficiaryForm';
 import { BoletoDetailsForm } from '@/components/forms/BoletoDetailsForm';
+import { CardDetailsForm } from '@/components/forms/CardDetailsForm';
 import { ReceiptTemplate } from '@/types/template';
 
 interface PaymentFormProps {
@@ -56,6 +57,11 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
       multa: 0,
       juros: 0,
       descontos: 0
+    },
+    dadosCartao: {
+      bandeira: '',
+      ultimosDigitos: '',
+      parcelas: 1
     }
   });
 
@@ -121,6 +127,11 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
       />
 
       <BoletoDetailsForm 
+        formData={formData} 
+        onInputChange={handleInputChange} 
+      />
+
+      <CardDetailsForm 
         formData={formData} 
         onInputChange={handleInputChange} 
       />
