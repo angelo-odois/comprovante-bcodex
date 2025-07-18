@@ -12,17 +12,22 @@ import { Receipt, Settings, FileText, ArrowLeft, Sparkles } from 'lucide-react';
 import { MockReceiptDemo } from '@/components/MockReceiptDemo';
 import { TemplateManager } from '@/components/TemplateManager';
 import { ReceiptTemplate } from '@/types/template';
-import { useReceiptHistory } from '@/hooks/useReceiptHistory';
+import { useReceipts } from '@/hooks/useReceipts';
 
 export default function NewReceipt() {
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [companyLogo, setCompanyLogo] = useState<CompanyLogo | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<ReceiptTemplate | null>(null);
-  const { saveToHistory } = useReceiptHistory();
+  const { saveReceipt } = useReceipts();
 
-  const handlePaymentSubmit = (data: PaymentData) => {
+  const handlePaymentSubmit = async (data: PaymentData) => {
     setPaymentData(data);
-    saveToHistory(data, companyLogo, selectedTemplate?.id);
+    
+    try {
+      await saveReceipt(data, undefined, selectedTemplate?.id);
+    } catch (error) {
+      console.error('Erro ao salvar comprovante:', error);
+    }
   };
 
   const handleTemplateSelect = (template: ReceiptTemplate) => {
