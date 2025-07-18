@@ -206,7 +206,19 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
               <Label htmlFor="type">Tipo de Pagamento *</Label>
               <Select
                 value={formData.type}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as any }))}
+                onValueChange={(value) => {
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    type: value as any,
+                    config: {
+                      ...prev.config!,
+                      // Para boleto, o pagador não é mostrado por padrão
+                      showPayer: value !== 'Boleto' ? prev.config?.showPayer ?? false : false,
+                      // Para boleto, as taxas são mais relevantes
+                      showFees: value === 'Boleto' ? true : prev.config?.showFees ?? false
+                    }
+                  }))
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo" />
@@ -252,8 +264,11 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
                 id="showPayer"
                 checked={formData.config?.showPayer}
                 onCheckedChange={(checked) => updateConfig('showPayer', checked)}
+                disabled={formData.type === 'Boleto'}
               />
-              <Label htmlFor="showPayer">Mostrar dados do pagador</Label>
+              <Label htmlFor="showPayer" className={formData.type === 'Boleto' ? 'text-muted-foreground' : ''}>
+                Mostrar dados do pagador {formData.type === 'Boleto' && '(não aplicável para boleto)'}
+              </Label>
             </div>
             
             <div className="flex items-center space-x-2">
