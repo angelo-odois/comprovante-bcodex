@@ -120,18 +120,14 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
                   <span className="text-muted-foreground">ID</span>
                   <span className="font-mono">{data.id}</span>
                 </div>
-                {data.tipo !== 'Boleto' && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">EndToEnd</span>
-                      <span className="font-mono text-xs">{data.transacao.endToEnd}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Autenticação</span>
-                      <span className="font-mono text-xs">{data.transacao.numeroAutenticacao}</span>
-                    </div>
-                  </>
-                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">EndToEnd</span>
+                  <span className="font-mono text-xs">{data.transacao.endToEnd}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Autenticação</span>
+                  <span className="font-mono text-xs">{data.transacao.numeroAutenticacao}</span>
+                </div>
                 {data.tipo === 'Boleto' && data.dadosBoleto && (
                   <>
                     <div className="flex justify-between">
