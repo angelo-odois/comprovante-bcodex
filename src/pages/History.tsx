@@ -1,13 +1,21 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Download, Trash2, Eye } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Clock, Download, Trash2, Eye, Edit } from 'lucide-react';
 import { useReceipts } from '@/hooks/useReceipts';
+import { PaymentReceipt } from '@/components/PaymentReceipt';
+import { PaymentForm } from '@/components/PaymentForm';
+import { downloadEnhancedPDF } from '@/utils/pdf';
 
 export default function History() {
-  const { receipts, loading, deleteReceipt } = useReceipts();
+  const { receipts, loading, deleteReceipt, saveReceipt } = useReceipts();
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [editingReceipt, setEditingReceipt] = useState(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -36,6 +44,44 @@ export default function History() {
         return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+    }
+  };
+
+  const handleView = (receipt) => {
+    setSelectedReceipt(receipt);
+    setViewDialogOpen(true);
+  };
+
+  const handleEdit = (receipt) => {
+    setEditingReceipt(receipt);
+    setEditDialogOpen(true);
+  };
+
+  const handleDownload = async (receipt) => {
+    // Create a temporary element with the receipt content
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = `
+      <div id="temp-receipt-content">
+        <!-- This would be replaced with the actual PaymentReceipt component HTML -->
+      </div>
+    `;
+    document.body.appendChild(tempDiv);
+    
+    // For now, we'll use a simple approach - we could improve this by rendering the component
+    try {
+      await downloadEnhancedPDF(tempDiv, `comprovante-${receipt.id}.pdf`);
+    } finally {
+      document.body.removeChild(tempDiv);
+    }
+  };
+
+  const handleSaveEdit = async (updatedData, logo) => {
+    try {
+      await saveReceipt(updatedData, logo, editingReceipt?.templateId);
+      setEditDialogOpen(false);
+      setEditingReceipt(null);
+    } catch (error) {
+      console.error('Erro ao salvar comprovante editado:', error);
     }
   };
 
@@ -122,13 +168,29 @@ export default function History() {
                 </div>
 
                 <div className="flex gap-2 pt-4 border-t">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleView(receipt)}
+                  >
                     <Eye className="h-4 w-4 mr-2" />
                     Visualizar
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleDownload(receipt)}
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Download
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleEdit(receipt)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar
                   </Button>
                   <Button 
                     variant="outline" 
@@ -145,6 +207,40 @@ export default function History() {
           ))}
         </div>
       )}
+
+      {/* Dialog para visualização */}
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Visualizar Comprovante</DialogTitle>
+          </DialogHeader>
+          {selectedReceipt && (
+            <PaymentReceipt
+              data={selectedReceipt.paymentData}
+              logo={selectedReceipt.logo}
+              onDownloadPDF={() => handleDownload(selectedReceipt)}
+              onPrint={() => handleDownload(selectedReceipt)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para edição */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Comprovante</DialogTitle>
+          </DialogHeader>
+          {editingReceipt && (
+            <PaymentForm
+              initialData={editingReceipt.paymentData}
+              initialLogo={editingReceipt.logo}
+              onSubmit={handleSaveEdit}
+              submitButtonText="Salvar Alterações"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
