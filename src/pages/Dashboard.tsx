@@ -9,7 +9,7 @@ export default function Dashboard() {
   const { history } = useReceiptHistory();
   const recentReceipts = history.slice(0, 5);
 
-  const totalAmount = history.reduce((sum, receipt) => sum + (receipt.data?.amount || 0), 0);
+  const totalAmount = history.reduce((sum, receipt) => sum + (receipt.paymentData?.valor || 0), 0);
   const thisMonthCount = history.filter(receipt => {
     const receiptDate = new Date(receipt.createdAt);
     const now = new Date();
@@ -135,9 +135,9 @@ export default function Dashboard() {
                 {recentReceipts.map((receipt) => (
                   <div key={receipt.id} className="flex justify-between items-center p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors">
                     <div>
-                      <p className="font-medium">{receipt.data?.beneficiary?.name || 'Beneficiário'}</p>
+                      <p className="font-medium">{receipt.paymentData?.beneficiario?.nome || 'Beneficiário'}</p>
                       <p className="text-sm text-muted-foreground">
-                        R$ {(receipt.data?.amount || 0).toFixed(2).replace('.', ',')}
+                        R$ {(receipt.paymentData?.valor || 0).toFixed(2).replace('.', ',')}
                       </p>
                     </div>
                     <div className="text-xs text-muted-foreground text-right">
