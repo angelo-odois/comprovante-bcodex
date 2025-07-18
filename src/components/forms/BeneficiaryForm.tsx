@@ -8,16 +8,18 @@ import { PaymentData } from '@/types/payment';
 interface BeneficiaryFormProps {
   formData: Partial<PaymentData>;
   onInputChange: (section: string, field: string, value: string | number | Date) => void;
+  isOptional?: boolean;
 }
 
 export const BeneficiaryForm: React.FC<BeneficiaryFormProps> = ({
   formData,
-  onInputChange
+  onInputChange,
+  isOptional = false
 }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Dados do Beneficiário</CardTitle>
+        <CardTitle>Dados do Beneficiário {isOptional && '(Opcional)'}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -27,7 +29,7 @@ export const BeneficiaryForm: React.FC<BeneficiaryFormProps> = ({
               id="beneficiarioNome"
               value={formData.beneficiario?.nome || ''}
               onChange={(e) => onInputChange('beneficiario', 'nome', e.target.value)}
-              required
+              required={!isOptional}
             />
           </div>
           
@@ -37,7 +39,7 @@ export const BeneficiaryForm: React.FC<BeneficiaryFormProps> = ({
               id="beneficiarioCpfCnpj"
               value={formData.beneficiario?.cpfCnpj || ''}
               onChange={(e) => onInputChange('beneficiario', 'cpfCnpj', e.target.value)}
-              required
+              required={!isOptional}
             />
           </div>
         </div>
@@ -49,7 +51,7 @@ export const BeneficiaryForm: React.FC<BeneficiaryFormProps> = ({
               id="beneficiarioBanco"
               value={formData.beneficiario?.banco || ''}
               onChange={(e) => onInputChange('beneficiario', 'banco', e.target.value)}
-              required
+              required={!isOptional}
             />
           </div>
           
@@ -59,7 +61,7 @@ export const BeneficiaryForm: React.FC<BeneficiaryFormProps> = ({
               id="beneficiarioAgencia"
               value={formData.beneficiario?.agencia || ''}
               onChange={(e) => onInputChange('beneficiario', 'agencia', e.target.value)}
-              required
+              required={!isOptional}
             />
           </div>
           
@@ -69,7 +71,7 @@ export const BeneficiaryForm: React.FC<BeneficiaryFormProps> = ({
               id="beneficiarioConta"
               value={formData.beneficiario?.conta || ''}
               onChange={(e) => onInputChange('beneficiario', 'conta', e.target.value)}
-              required
+              required={!isOptional}
             />
           </div>
         </div>
