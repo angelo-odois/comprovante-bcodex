@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { useReceipts } from '@/hooks/useReceipts';
 import { PaymentReceipt } from '@/components/PaymentReceipt';
 import { PaymentForm } from '@/components/PaymentForm';
 import { downloadEnhancedPDF } from '@/utils/pdf';
+import { PaymentData, CompanyLogo } from '@/types/payment';
 
 export default function History() {
   const { receipts, loading, deleteReceipt, saveReceipt } = useReceipts();
@@ -75,7 +75,7 @@ export default function History() {
     }
   };
 
-  const handleSaveEdit = async (updatedData, logo) => {
+  const handleSaveEdit = async (updatedData: PaymentData, logo?: CompanyLogo) => {
     try {
       await saveReceipt(updatedData, logo, editingReceipt?.templateId);
       setEditDialogOpen(false);

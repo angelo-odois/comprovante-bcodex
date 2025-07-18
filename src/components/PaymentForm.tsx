@@ -1,18 +1,26 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { PaymentData } from '@/types/payment';
+import { PaymentData, CompanyLogo } from '@/types/payment';
 import { TransactionDetailsForm } from '@/components/forms/TransactionDetailsForm';
 import { PayerForm } from '@/components/forms/PayerForm';
 import { BeneficiaryForm } from '@/components/forms/BeneficiaryForm';
 import { BoletoDetailsForm } from '@/components/forms/BoletoDetailsForm';
 
 interface PaymentFormProps {
-  onSubmit: (data: PaymentData) => void;
+  onSubmit: (data: PaymentData, logo?: CompanyLogo) => void;
+  initialData?: PaymentData;
+  initialLogo?: CompanyLogo;
+  submitButtonText?: string;
 }
 
-export const PaymentForm: React.FC<PaymentFormProps> = ({ onSubmit }) => {
-  const [formData, setFormData] = useState<Partial<PaymentData>>({
+export const PaymentForm: React.FC<PaymentFormProps> = ({ 
+  onSubmit, 
+  initialData,
+  initialLogo,
+  submitButtonText = 'Gerar Comprovante'
+}) => {
+  const [formData, setFormData] = useState<Partial<PaymentData>>(initialData || {
     tipo: 'PIX',
     status: 'Aprovado',
     dataHora: new Date(),
@@ -48,6 +56,8 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ onSubmit }) => {
     }
   });
 
+  const [logo, setLogo] = useState<CompanyLogo | undefined>(initialLogo);
+
   const handleInputChange = (section: string, field: string, value: string | number | Date) => {
     setFormData(prev => {
       if (section === 'valor' || section === 'tipo' || section === 'status' || section === 'dataHora' || section === 'id') {
@@ -80,7 +90,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ onSubmit }) => {
       }
     } as PaymentData;
 
-    onSubmit(paymentData);
+    onSubmit(paymentData, logo);
   };
 
   return (
@@ -107,7 +117,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ onSubmit }) => {
       />
 
       <Button type="submit" className="w-full" size="lg">
-        Gerar Comprovante
+        {submitButtonText}
       </Button>
     </form>
   );
