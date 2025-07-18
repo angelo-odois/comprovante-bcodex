@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { DateTimePicker } from '@/components/ui/datetime-picker';
 import { PaymentData } from '@/types/payment';
 
 interface TransactionDetailsFormProps {
@@ -87,12 +88,10 @@ export const TransactionDetailsForm: React.FC<TransactionDetailsFormProps> = ({
 
           <div>
             <Label htmlFor="transactionDateTime">Data e Hora da Transação *</Label>
-            <Input
-              id="transactionDateTime"
-              type="datetime-local"
-              value={formData.dataHora ? new Date(formData.dataHora).toISOString().slice(0, 16) : ''}
-              onChange={(e) => onInputChange('dataHora', '', new Date(e.target.value))}
-              required
+            <DateTimePicker
+              value={formData.dataHora}
+              onChange={(date) => date && onInputChange('dataHora', '', date)}
+              placeholder="Selecione data e hora"
             />
           </div>
         </div>
