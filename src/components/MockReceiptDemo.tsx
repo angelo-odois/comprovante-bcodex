@@ -7,8 +7,8 @@ import { FileText } from 'lucide-react';
 import { generatePDF, downloadPDF } from '@/utils/pdfGenerator';
 
 export const MockReceiptDemo: React.FC = () => {
-  // Dados mockados para demonstração
-  const mockPaymentData: PaymentData = {
+  // Dados mockados para demonstração PIX
+  const mockPaymentDataPix: PaymentData = {
     id: 'TXN001234567',
     tipo: 'PIX',
     valor: 1250.50,
@@ -36,23 +36,64 @@ export const MockReceiptDemo: React.FC = () => {
     }
   };
 
+  // Dados mockados para demonstração Boleto
+  const mockPaymentDataBoleto: PaymentData = {
+    id: 'BOL001234567',
+    tipo: 'Boleto',
+    valor: 850.75,
+    dataHora: new Date(),
+    status: 'Aprovado',
+    pagador: {
+      nome: 'João Silva Santos',
+      cpfCnpj: '12345678901',
+      banco: '341 - Itaú Unibanco S.A.',
+      agencia: '1234',
+      conta: '56789-0'
+    },
+    beneficiario: {
+      nome: '',
+      cpfCnpj: '',
+      banco: '',
+      agencia: '',
+      conta: ''
+    },
+    transacao: {
+      numeroAutenticacao: '',
+      endToEnd: '',
+      descricao: 'Pagamento de conta de luz - CEMIG'
+    },
+    dadosBoleto: {
+      documento: '000001234567890',
+      codigoBarras: '00190000090012345678901234567890123456',
+      dataVencimento: new Date('2024-12-15'),
+      dataPagamento: new Date(),
+      valorDocumento: 800.00,
+      multa: 25.50,
+      juros: 30.25,
+      descontos: 5.00
+    }
+  };
+
   // Logo mockada para demonstração
   const mockLogo: CompanyLogo = {
-    url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjQwIiB2aWV3Qm94PSIwIDAgMTAwIDQwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMjU2M2ViIi8+Cjx0ZXh0IHg9IjUwIiB5PSIyNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TG9nbyBFeGVtcGxvPC90ZXh0Pgo8L3N2Zz4=',
+    url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjQwIiB2aWV3Qm94PSIwIDAgMTAwIDQwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjQwIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TG9nbyBFeGVtcGxvPC90ZXh0Pgo8L3N2Zz4=',
     name: 'logo-exemplo.svg'
   };
+
+  const [selectedType, setSelectedType] = React.useState<'PIX' | 'Boleto'>('PIX');
+  const currentMockData = selectedType === 'PIX' ? mockPaymentDataPix : mockPaymentDataBoleto;
 
   const handleDownloadPDF = () => {
     const receiptElement = document.getElementById('mock-receipt-content');
     if (receiptElement) {
-      downloadPDF(receiptElement, `comprovante-mock-${mockPaymentData.id}.pdf`);
+      downloadPDF(receiptElement, `comprovante-mock-${currentMockData.id}.pdf`);
     }
   };
 
   const handlePrint = () => {
     const receiptElement = document.getElementById('mock-receipt-content');
     if (receiptElement) {
-      generatePDF(receiptElement, `comprovante-mock-${mockPaymentData.id}.pdf`);
+      generatePDF(receiptElement, `comprovante-mock-${currentMockData.id}.pdf`);
     }
   };
 
@@ -70,6 +111,25 @@ export const MockReceiptDemo: React.FC = () => {
             Este é um exemplo de como o comprovante ficará com dados reais. 
             Utilize os botões abaixo para testar a impressão e download do PDF.
           </p>
+          
+          {/* Seletor de tipo */}
+          <div className="flex gap-2 mb-4">
+            <Button 
+              onClick={() => setSelectedType('PIX')} 
+              variant={selectedType === 'PIX' ? 'default' : 'outline'}
+              size="sm"
+            >
+              Exemplo PIX
+            </Button>
+            <Button 
+              onClick={() => setSelectedType('Boleto')} 
+              variant={selectedType === 'Boleto' ? 'default' : 'outline'}
+              size="sm"
+            >
+              Exemplo Boleto
+            </Button>
+          </div>
+
           <div className="flex gap-2">
             <Button onClick={handleDownloadPDF} variant="default">
               Baixar PDF de Exemplo
@@ -83,7 +143,7 @@ export const MockReceiptDemo: React.FC = () => {
 
       <div id="mock-receipt-content">
         <PaymentReceipt
-          data={mockPaymentData}
+          data={currentMockData}
           logo={mockLogo}
           onDownloadPDF={handleDownloadPDF}
           onPrint={handlePrint}

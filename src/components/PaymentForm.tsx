@@ -5,6 +5,7 @@ import { PaymentData } from '@/types/payment';
 import { TransactionDetailsForm } from '@/components/forms/TransactionDetailsForm';
 import { PayerForm } from '@/components/forms/PayerForm';
 import { BeneficiaryForm } from '@/components/forms/BeneficiaryForm';
+import { BoletoDetailsForm } from '@/components/forms/BoletoDetailsForm';
 
 interface PaymentFormProps {
   onSubmit: (data: PaymentData) => void;
@@ -34,6 +35,16 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ onSubmit }) => {
       numeroAutenticacao: '',
       endToEnd: '',
       descricao: ''
+    },
+    dadosBoleto: {
+      documento: '',
+      codigoBarras: '',
+      dataVencimento: new Date(),
+      dataPagamento: new Date(),
+      valorDocumento: 0,
+      multa: 0,
+      juros: 0,
+      descontos: 0
     }
   });
 
@@ -85,6 +96,12 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ onSubmit }) => {
       />
       
       <BeneficiaryForm 
+        formData={formData} 
+        onInputChange={handleInputChange}
+        isOptional={formData.tipo === 'Boleto'}
+      />
+
+      <BoletoDetailsForm 
         formData={formData} 
         onInputChange={handleInputChange} 
       />

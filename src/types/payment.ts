@@ -15,7 +15,7 @@ export interface PaymentData {
     conta: string;
   };
   
-  // Dados do beneficiário
+  // Dados do beneficiário (opcionais para boleto)
   beneficiario: {
     nome: string;
     cpfCnpj: string;
@@ -31,6 +31,18 @@ export interface PaymentData {
     endToEnd: string;
     descricao: string;
     taxas?: number;
+  };
+
+  // Dados específicos para boleto
+  dadosBoleto?: {
+    documento: string;
+    codigoBarras: string;
+    dataVencimento: Date;
+    dataPagamento: Date;
+    valorDocumento: number;
+    multa: number;
+    juros: number;
+    descontos: number;
   };
 }
 

@@ -44,6 +44,14 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
     return doc;
   };
 
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(date);
+  };
+
   const handleEnhancedDownload = () => {
     const receiptElement = document.getElementById('receipt-content');
     if (receiptElement) {
@@ -113,14 +121,18 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
                   <span className="text-muted-foreground">ID</span>
                   <span className="font-mono">{data.id}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">EndToEnd</span>
-                  <span className="font-mono text-xs">{data.transacao.endToEnd}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Autenticação</span>
-                  <span className="font-mono text-xs">{data.transacao.numeroAutenticacao}</span>
-                </div>
+                {data.tipo !== 'Boleto' && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">EndToEnd</span>
+                      <span className="font-mono text-xs">{data.transacao.endToEnd}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Autenticação</span>
+                      <span className="font-mono text-xs">{data.transacao.numeroAutenticacao}</span>
+                    </div>
+                  </>
+                )}
                 {data.transacao.descricao && (
                   <div className="pt-2">
                     <span className="text-muted-foreground block mb-1">Descrição</span>
@@ -129,6 +141,53 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
                 )}
               </div>
             </div>
+
+            {/* Dados do Boleto - só aparece se for boleto */}
+            {data.tipo === 'Boleto' && data.dadosBoleto && (
+              <div className="pt-4 border-t">
+                <h3 className="text-sm font-medium text-foreground mb-3">Dados do Boleto</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Documento</span>
+                    <span className="font-mono">{data.dadosBoleto.documento}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Código de Barras</span>
+                    <span className="font-mono text-xs">{data.dadosBoleto.codigoBarras}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Data Vencimento</span>
+                    <span>{formatDate(data.dadosBoleto.dataVencimento)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Data Pagamento</span>
+                    <span>{formatDate(data.dadosBoleto.dataPagamento)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Valor do Documento</span>
+                    <span>{formatCurrency(data.dadosBoleto.valorDocumento)}</span>
+                  </div>
+                  {data.dadosBoleto.multa > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">(+) Multa</span>
+                      <span className="text-red-600">{formatCurrency(data.dadosBoleto.multa)}</span>
+                    </div>
+                  )}
+                  {data.dadosBoleto.juros > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">(+) Juros</span>
+                      <span className="text-red-600">{formatCurrency(data.dadosBoleto.juros)}</span>
+                    </div>
+                  )}
+                  {data.dadosBoleto.descontos > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">(-) Descontos</span>
+                      <span className="text-green-600">{formatCurrency(data.dadosBoleto.descontos)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Pagador */}
             <div className="pt-4 border-t">
@@ -153,34 +212,36 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
               </div>
             </div>
 
-            {/* Beneficiário */}
-            <div className="pt-4 border-t">
-              <h3 className="text-sm font-medium text-foreground mb-3">Beneficiário</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Nome</span>
-                  <span className="font-medium">{data.beneficiario.nome}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">CPF/CNPJ</span>
-                  <span className="font-mono">{formatCpfCnpj(data.beneficiario.cpfCnpj)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Banco</span>
-                  <span>{data.beneficiario.banco}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Conta</span>
-                  <span className="font-mono">{data.beneficiario.agencia}/{data.beneficiario.conta}</span>
-                </div>
-                {data.beneficiario.chavePix && (
+            {/* Beneficiário - só aparece se não for boleto ou se tiver dados */}
+            {(data.tipo !== 'Boleto' || (data.beneficiario.nome && data.beneficiario.cpfCnpj)) && (
+              <div className="pt-4 border-t">
+                <h3 className="text-sm font-medium text-foreground mb-3">Beneficiário</h3>
+                <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Chave PIX</span>
-                    <span className="font-mono text-green-600">{data.beneficiario.chavePix}</span>
+                    <span className="text-muted-foreground">Nome</span>
+                    <span className="font-medium">{data.beneficiario.nome}</span>
                   </div>
-                )}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">CPF/CNPJ</span>
+                    <span className="font-mono">{formatCpfCnpj(data.beneficiario.cpfCnpj)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Banco</span>
+                    <span>{data.beneficiario.banco}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Conta</span>
+                    <span className="font-mono">{data.beneficiario.agencia}/{data.beneficiario.conta}</span>
+                  </div>
+                  {data.beneficiario.chavePix && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Chave PIX</span>
+                      <span className="font-mono text-green-600">{data.beneficiario.chavePix}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Rodapé minimalista */}
