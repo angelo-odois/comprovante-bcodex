@@ -8,8 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Save, X } from 'lucide-react';
+import { Save, X, Loader2 } from 'lucide-react';
 import { ReceiptTemplate } from '@/types/template';
+import { useTemplates } from '@/hooks/useTemplates';
 
 interface TemplateEditorProps {
   template?: ReceiptTemplate | null;
@@ -22,6 +23,9 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
   onSave,
   onCancel
 }) => {
+  const { saveTemplate, updateTemplate } = useTemplates();
+  const [saving, setSaving] = useState(false);
+  
   const [formData, setFormData] = useState<Partial<ReceiptTemplate>>({
     name: template?.name || '',
     description: template?.description || '',
@@ -29,7 +33,7 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
     isDefault: template?.isDefault || false,
     config: {
       showLogo: template?.config.showLogo ?? true,
-      showPayer: template?.config.showPayer ?? true,
+      showPayer: template?.config.showPayer ?? false,
       showBeneficiary: template?.config.showBeneficiary ?? true,
       showDescription: template?.config.showDescription ?? true,
       showFees: template?.config.showFees ?? false,
@@ -44,20 +48,50 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
     defaultData: template?.defaultData || {}
   });
 
-  const handleSave = () => {
-    const newTemplate: ReceiptTemplate = {
-      id: template?.id || `template-${Date.now()}`,
-      name: formData.name!,
-      description: formData.description!,
-      type: formData.type!,
-      isDefault: formData.isDefault!,
-      createdAt: template?.createdAt || new Date(),
-      updatedAt: new Date(),
-      config: formData.config!,
-      defaultData: formData.defaultData!
-    };
+  const handleSave = async () => {
+    if (!formData.name || !formData.type) {
+      return;
+    }
+
+    setSaving(true);
     
-    onSave(newTemplate);
+    try {
+      if (template) {
+        // Editando template existente
+        await updateTemplate(template.id, formData);
+        const updatedTemplate: ReceiptTemplate = {
+          ...template,
+          ...formData,
+          updatedAt: new Date()
+        } as ReceiptTemplate;
+        onSave(updatedTemplate);
+      } else {
+        // Criando novo template
+        const newTemplateData = {
+          name: formData.name!,
+          description: formData.description || '',
+          type: formData.type!,
+          isDefault: formData.isDefault!,
+          config: formData.config!,
+          defaultData: formData.defaultData!
+        };
+        
+        await saveTemplate(newTemplateData);
+        
+        const newTemplate: ReceiptTemplate = {
+          id: `template-${Date.now()}`,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          ...newTemplateData
+        };
+        
+        onSave(newTemplate);
+      }
+    } catch (error) {
+      console.error('Erro ao salvar template:', error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const updateConfig = (key: string, value: any) => {
@@ -95,12 +129,16 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={onCancel}>
+          <Button variant="outline" onClick={onCancel} disabled={saving}>
             <X className="h-4 w-4 mr-2" />
             Cancelar
           </Button>
-          <Button onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
+          <Button onClick={handleSave} disabled={saving || !formData.name || !formData.type}>
+            {saving ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
             Salvar
           </Button>
         </div>
@@ -120,6 +158,7 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="Ex: PIX Empresarial"
+                required
               />
             </div>
             

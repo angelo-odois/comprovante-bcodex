@@ -1,19 +1,22 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Edit, 
   Eye, 
-  Copy, 
   Trash2, 
   Star, 
   FileText,
   CreditCard,
   Banknote,
-  Zap
+  Zap,
+  Loader2
 } from 'lucide-react';
 import { ReceiptTemplate } from '@/types/template';
+import { useTemplates } from '@/hooks/useTemplates';
+import { toast } from '@/hooks/use-toast';
 
 interface TemplateListProps {
   onEdit: (template: ReceiptTemplate) => void;
@@ -28,81 +31,7 @@ export const TemplateList: React.FC<TemplateListProps> = ({
   onSelect,
   onCreate
 }) => {
-  // Templates de exemplo (depois virão de um store/API)
-  const [templates] = useState<ReceiptTemplate[]>([
-    {
-      id: '1',
-      name: 'PIX Padrão',
-      description: 'Template padrão para pagamentos PIX',
-      type: 'PIX',
-      isDefault: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      config: {
-        showLogo: true,
-        showPayer: true,
-        showBeneficiary: true,
-        showDescription: true,
-        showFees: false,
-        customFields: [],
-        styling: {
-          headerColor: 'hsl(var(--primary))',
-          accentColor: 'hsl(var(--accent))',
-          fontSize: 'medium',
-          layout: 'standard'
-        }
-      },
-      defaultData: {}
-    },
-    {
-      id: '2',
-      name: 'Boleto Empresarial',
-      description: 'Template para boletos com dados empresariais',
-      type: 'Boleto',
-      isDefault: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      config: {
-        showLogo: true,
-        showPayer: false,
-        showBeneficiary: false,
-        showDescription: true,
-        showFees: true,
-        customFields: [],
-        styling: {
-          headerColor: 'hsl(var(--primary))',
-          accentColor: 'hsl(var(--accent))',
-          fontSize: 'medium',
-          layout: 'detailed'
-        }
-      },
-      defaultData: {}
-    },
-    {
-      id: '3',
-      name: 'TED Simplificado',
-      description: 'Template minimalista para TEDs',
-      type: 'TED',
-      isDefault: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      config: {
-        showLogo: false,
-        showPayer: true,
-        showBeneficiary: true,
-        showDescription: false,
-        showFees: true,
-        customFields: [],
-        styling: {
-          headerColor: 'hsl(var(--primary))',
-          accentColor: 'hsl(var(--accent))',
-          fontSize: 'small',
-          layout: 'compact'
-        }
-      },
-      defaultData: {}
-    }
-  ]);
+  const { templates, loading, deleteTemplate } = useTemplates();
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -123,19 +52,58 @@ export const TemplateList: React.FC<TemplateListProps> = ({
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'PIX':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'Boleto':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
       case 'TED':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       case 'DOC':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
       case 'Cartão':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   };
+
+  const handleDelete = async (template: ReceiptTemplate) => {
+    if (window.confirm(`Tem certeza que deseja excluir o template "${template.name}"?`)) {
+      try {
+        await deleteTemplate(template.id);
+        toast({
+          title: "Template removido",
+          description: "Template foi removido com sucesso.",
+        });
+      } catch (error) {
+        toast({
+          title: "Erro ao remover template",
+          description: "Não foi possível remover o template.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Carregando templates...</span>
+      </div>
+    );
+  }
+
+  if (templates.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+        <h3 className="text-lg font-medium mb-2">Nenhum template encontrado</h3>
+        <p className="text-muted-foreground mb-4">
+          Crie seu primeiro template para começar a gerar comprovantes personalizados.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -173,6 +141,11 @@ export const TemplateList: React.FC<TemplateListProps> = ({
                     Com logo
                   </Badge>
                 )}
+                {template.config.showPayer && (
+                  <Badge variant="outline" className="text-xs">
+                    Com pagador
+                  </Badge>
+                )}
               </div>
               
               <div className="flex gap-2">
@@ -197,6 +170,14 @@ export const TemplateList: React.FC<TemplateListProps> = ({
                   onClick={() => onEdit(template)}
                 >
                   <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleDelete(template)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             </CardContent>

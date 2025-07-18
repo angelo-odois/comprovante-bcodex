@@ -4,11 +4,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Printer, Share2 } from 'lucide-react';
 import { PaymentData, CompanyLogo } from '@/types/payment';
+import { ReceiptTemplate } from '@/types/template';
 import { generateEnhancedPDF, downloadEnhancedPDF } from '@/utils/pdf';
 
 interface PaymentReceiptProps {
   data: PaymentData;
   logo?: CompanyLogo | null;
+  template?: ReceiptTemplate;
   onDownloadPDF: () => void;
   onPrint: () => void;
 }
@@ -16,6 +18,7 @@ interface PaymentReceiptProps {
 export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ 
   data, 
   logo, 
+  template,
   onDownloadPDF, 
   onPrint 
 }) => {
@@ -67,6 +70,38 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
     }
   };
 
+  // Configurações do template ou valores padrão
+  const showLogo = template?.config?.showLogo ?? true;
+  const showPayer = template?.config?.showPayer ?? true;
+  const showBeneficiary = template?.config?.showBeneficiary ?? true;
+  const showDescription = template?.config?.showDescription ?? true;
+  const showFees = template?.config?.showFees ?? false;
+  const layout = template?.config?.styling?.layout || 'standard';
+  const fontSize = template?.config?.styling?.fontSize || 'medium';
+
+  // Classes CSS baseadas nas configurações do template
+  const getLayoutClasses = () => {
+    switch (layout) {
+      case 'compact':
+        return 'p-4 space-y-3';
+      case 'detailed':
+        return 'p-10 space-y-8';
+      default:
+        return 'p-8 space-y-6';
+    }
+  };
+
+  const getFontSizeClasses = () => {
+    switch (fontSize) {
+      case 'small':
+        return 'text-sm';
+      case 'large':
+        return 'text-lg';
+      default:
+        return 'text-base';
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex gap-2 mb-6 print-hidden">
@@ -85,10 +120,10 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
       </div>
 
       <Card id="receipt-content" className="max-w-2xl mx-auto border shadow-sm">
-        <CardContent className="p-8">
+        <CardContent className={`${getLayoutClasses()} ${getFontSizeClasses()}`}>
           {/* Cabeçalho */}
           <div className="text-center mb-8">
-            {logo && (
+            {showLogo && logo && (
               <div className="mb-6">
                 <img 
                   src={logo.url} 
@@ -100,7 +135,7 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
             <h1 className="text-xl font-bold text-foreground mb-4">COMPROVANTE DE PAGAMENTO</h1>
           </div>
 
-          <div className="space-y-6">
+          <div className={layout === 'compact' ? 'space-y-3' : layout === 'detailed' ? 'space-y-8' : 'space-y-6'}>
             {/* Valor e Status */}
             <div className="text-center mb-8 pb-6 border-b">
               <div className="mb-3">
@@ -128,6 +163,8 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
                   <span className="text-muted-foreground">Autenticação</span>
                   <span className="font-mono text-xs">{data.transacao.numeroAutenticacao}</span>
                 </div>
+                
+                {/* Detalhes específicos do boleto */}
                 {data.tipo === 'Boleto' && data.dadosBoleto && (
                   <>
                     <div className="flex justify-between">
@@ -150,21 +187,26 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
                       <span className="text-muted-foreground">Valor do documento</span>
                       <span>{formatCurrency(data.dadosBoleto.valorDocumento)}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">(+) Multa</span>
-                      <span>{formatCurrency(data.dadosBoleto.multa)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">(+) Juros</span>
-                      <span>{formatCurrency(data.dadosBoleto.juros)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">(-) Descontos</span>
-                      <span>{formatCurrency(data.dadosBoleto.descontos)}</span>
-                    </div>
+                    {showFees && (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">(+) Multa</span>
+                          <span>{formatCurrency(data.dadosBoleto.multa)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">(+) Juros</span>
+                          <span>{formatCurrency(data.dadosBoleto.juros)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">(-) Descontos</span>
+                          <span>{formatCurrency(data.dadosBoleto.descontos)}</span>
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
-                {data.transacao.descricao && (
+                
+                {showDescription && data.transacao.descricao && (
                   <div className="pt-2">
                     <span className="text-muted-foreground block mb-1">Descrição</span>
                     <span className="text-sm">{data.transacao.descricao}</span>
@@ -173,8 +215,8 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
               </div>
             </div>
 
-            {/* Pagador - apenas se houver dados preenchidos */}
-            {(data.pagador.nome && data.pagador.nome.trim() !== '') && (
+            {/* Pagador - apenas se configurado no template e houver dados */}
+            {showPayer && data.pagador.nome && data.pagador.nome.trim() !== '' && (
               <div className="pt-4 border-t">
                 <h3 className="text-sm font-medium text-foreground mb-3">Pagador</h3>
                 <div className="space-y-2 text-sm">
@@ -198,8 +240,8 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
               </div>
             )}
 
-            {/* Beneficiário - apenas se não for boleto ou se houver dados preenchidos */}
-            {(data.tipo !== 'Boleto' || (data.beneficiario.nome && data.beneficiario.nome.trim() !== '')) && (
+            {/* Beneficiário - apenas se configurado no template */}
+            {showBeneficiary && (data.tipo !== 'Boleto' || (data.beneficiario.nome && data.beneficiario.nome.trim() !== '')) && (
               <div className="pt-4 border-t">
                 <h3 className="text-sm font-medium text-foreground mb-3">Beneficiário</h3>
                 <div className="space-y-2 text-sm">

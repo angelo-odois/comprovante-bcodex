@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { PaymentForm } from '@/components/PaymentForm';
 import { PaymentReceipt } from '@/components/PaymentReceipt';
@@ -36,6 +37,10 @@ export default function NewReceipt() {
 
   const handleCreateFromTemplate = (template: ReceiptTemplate) => {
     setSelectedTemplate(template);
+    // Aplicar dados padrão do template se existirem
+    if (template.defaultData && Object.keys(template.defaultData).length > 0) {
+      console.log('Aplicando dados padrão do template:', template.defaultData);
+    }
     console.log('Criar recibo com template:', template);
   };
 
@@ -97,15 +102,21 @@ export default function NewReceipt() {
                   Informações do Pagamento
                 </CardTitle>
                 {selectedTemplate && (
-                  <p className="text-sm text-blue-600 dark:text-blue-400">
-                    Usando template: <span className="font-medium">{selectedTemplate.name}</span>
-                  </p>
+                  <div className="mt-2">
+                    <p className="text-sm text-blue-600 dark:text-blue-400">
+                      Template selecionado: <span className="font-medium">{selectedTemplate.name}</span>
+                    </p>
+                    <p className="text-xs text-blue-500 dark:text-blue-300">
+                      {selectedTemplate.description}
+                    </p>
+                  </div>
                 )}
               </CardHeader>
               <CardContent className="p-6">
                 <PaymentForm 
                   onSubmit={handlePaymentSubmit} 
                   template={selectedTemplate || undefined}
+                  initialData={selectedTemplate?.defaultData as PaymentData}
                 />
               </CardContent>
             </Card>
@@ -171,6 +182,7 @@ export default function NewReceipt() {
               <PaymentReceipt 
                 data={paymentData}
                 logo={companyLogo}
+                template={selectedTemplate || undefined}
                 onDownloadPDF={handleDownloadPDF}
                 onPrint={handlePrint}
               />
