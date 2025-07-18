@@ -173,28 +173,30 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
               </div>
             </div>
 
-            {/* Pagador */}
-            <div className="pt-4 border-t">
-              <h3 className="text-sm font-medium text-foreground mb-3">Pagador</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Nome</span>
-                  <span className="font-medium">{data.pagador.nome}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">CPF/CNPJ</span>
-                  <span className="font-mono">{formatCpfCnpj(data.pagador.cpfCnpj)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Banco</span>
-                  <span>{data.pagador.banco}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Conta</span>
-                  <span className="font-mono">{data.pagador.agencia}/{data.pagador.conta}</span>
+            {/* Pagador - apenas se houver dados preenchidos */}
+            {(data.pagador.nome && data.pagador.nome.trim() !== '') && (
+              <div className="pt-4 border-t">
+                <h3 className="text-sm font-medium text-foreground mb-3">Pagador</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Nome</span>
+                    <span className="font-medium">{data.pagador.nome}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">CPF/CNPJ</span>
+                    <span className="font-mono">{formatCpfCnpj(data.pagador.cpfCnpj)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Banco</span>
+                    <span>{data.pagador.banco}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Conta</span>
+                    <span className="font-mono">{data.pagador.agencia}/{data.pagador.conta}</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Beneficiário - apenas se não for boleto ou se houver dados preenchidos */}
             {(data.tipo !== 'Boleto' || (data.beneficiario.nome && data.beneficiario.nome.trim() !== '')) && (
