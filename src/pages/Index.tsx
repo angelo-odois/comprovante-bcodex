@@ -8,13 +8,28 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Receipt, Settings, FileText } from 'lucide-react';
 import { MockReceiptDemo } from '@/components/MockReceiptDemo';
+import { TemplateManager } from '@/components/TemplateManager';
+import { ReceiptTemplate } from '@/types/template';
 
 const Index = () => {
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [companyLogo, setCompanyLogo] = useState<CompanyLogo | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<ReceiptTemplate | null>(null);
 
   const handlePaymentSubmit = (data: PaymentData) => {
     setPaymentData(data);
+  };
+
+  const handleTemplateSelect = (template: ReceiptTemplate) => {
+    setSelectedTemplate(template);
+    // Aqui você pode aplicar configurações do template
+    console.log('Template selecionado:', template);
+  };
+
+  const handleCreateFromTemplate = (template: ReceiptTemplate) => {
+    setSelectedTemplate(template);
+    // Redirecionar para o formulário com dados pré-preenchidos do template
+    console.log('Criar recibo com template:', template);
   };
 
   const handleDownloadPDF = () => {
@@ -49,10 +64,14 @@ const Index = () => {
 
         {!paymentData ? (
           <Tabs defaultValue="form" className="max-w-4xl mx-auto">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="form" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 Dados do Pagamento
+              </TabsTrigger>
+              <TabsTrigger value="templates" className="flex items-center gap-2">
+                <Receipt className="h-4 w-4" />
+                Templates
               </TabsTrigger>
               <TabsTrigger value="demo" className="flex items-center gap-2">
                 <Receipt className="h-4 w-4" />
@@ -71,11 +90,23 @@ const Index = () => {
                     <Receipt className="h-5 w-5" />
                     Informações do Pagamento
                   </CardTitle>
+                  {selectedTemplate && (
+                    <p className="text-sm text-muted-foreground">
+                      Usando template: <span className="font-medium">{selectedTemplate.name}</span>
+                    </p>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <PaymentForm onSubmit={handlePaymentSubmit} />
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="templates">
+              <TemplateManager
+                onSelectTemplate={handleTemplateSelect}
+                onCreateReceipt={handleCreateFromTemplate}
+              />
             </TabsContent>
 
             <TabsContent value="demo">
