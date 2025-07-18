@@ -29,30 +29,65 @@ export const useTemplates = () => {
         throw error;
       }
       
-      const formattedTemplates: ReceiptTemplate[] = (data || []).map(template => ({
-        id: template.id,
-        name: template.name,
-        description: template.description || '',
-        type: template.type as 'PIX' | 'TED' | 'DOC' | 'Boleto' | 'Cartão',
-        isDefault: template.is_default || false,
-        createdAt: new Date(template.created_at),
-        updatedAt: new Date(template.updated_at),
-        config: template.config || {
-          showLogo: true,
-          showPayer: false,
-          showBeneficiary: true,
-          showDescription: true,
-          showFees: false,
-          customFields: [],
-          styling: {
-            headerColor: 'hsl(var(--primary))',
-            accentColor: 'hsl(var(--accent))',
-            fontSize: 'medium',
-            layout: 'standard'
-          }
-        },
-        defaultData: template.default_data || {},
-      }));
+      const formattedTemplates: ReceiptTemplate[] = (data || []).map(template => {
+        // Parse config from JSON
+        let config;
+        try {
+          config = typeof template.config === 'string' 
+            ? JSON.parse(template.config) 
+            : (template.config as any) || {
+                showLogo: true,
+                showPayer: false,
+                showBeneficiary: true,
+                showDescription: true,
+                showFees: false,
+                customFields: [],
+                styling: {
+                  headerColor: 'hsl(var(--primary))',
+                  accentColor: 'hsl(var(--accent))',
+                  fontSize: 'medium',
+                  layout: 'standard'
+                }
+              };
+        } catch (e) {
+          config = {
+            showLogo: true,
+            showPayer: false,
+            showBeneficiary: true,
+            showDescription: true,
+            showFees: false,
+            customFields: [],
+            styling: {
+              headerColor: 'hsl(var(--primary))',
+              accentColor: 'hsl(var(--accent))',
+              fontSize: 'medium',
+              layout: 'standard'
+            }
+          };
+        }
+
+        // Parse defaultData from JSON
+        let defaultData;
+        try {
+          defaultData = typeof template.default_data === 'string' 
+            ? JSON.parse(template.default_data) 
+            : (template.default_data as any) || {};
+        } catch (e) {
+          defaultData = {};
+        }
+
+        return {
+          id: template.id,
+          name: template.name,
+          description: template.description || '',
+          type: template.type as 'PIX' | 'TED' | 'DOC' | 'Boleto' | 'Cartão',
+          isDefault: template.is_default || false,
+          createdAt: new Date(template.created_at),
+          updatedAt: new Date(template.updated_at),
+          config,
+          defaultData,
+        };
+      });
       
       setTemplates(formattedTemplates);
     } catch (error: any) {
@@ -79,8 +114,8 @@ export const useTemplates = () => {
         description: template.description,
         type: template.type,
         is_default: template.isDefault,
-        config: template.config,
-        default_data: template.defaultData,
+        config: JSON.stringify(template.config),
+        default_data: JSON.stringify(template.defaultData),
       };
 
       const { data, error } = await supabase
@@ -103,8 +138,8 @@ export const useTemplates = () => {
         isDefault: data.is_default || false,
         createdAt: new Date(data.created_at),
         updatedAt: new Date(data.updated_at),
-        config: data.config,
-        defaultData: data.default_data || {},
+        config: typeof data.config === 'string' ? JSON.parse(data.config) : data.config as any,
+        defaultData: typeof data.default_data === 'string' ? JSON.parse(data.default_data) : data.default_data as any || {},
       };
       
       setTemplates(prev => [newTemplate, ...prev]);
@@ -132,8 +167,8 @@ export const useTemplates = () => {
       if (updates.description !== undefined) updateData.description = updates.description;
       if (updates.type !== undefined) updateData.type = updates.type;
       if (updates.isDefault !== undefined) updateData.is_default = updates.isDefault;
-      if (updates.config !== undefined) updateData.config = updates.config;
-      if (updates.defaultData !== undefined) updateData.default_data = updates.defaultData;
+      if (updates.config !== undefined) updateData.config = JSON.stringify(updates.config);
+      if (updates.defaultData !== undefined) updateData.default_data = JSON.stringify(updates.defaultData);
 
       const { error } = await supabase
         .from('receipt_templates')
