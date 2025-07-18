@@ -6,19 +6,22 @@ import { TransactionDetailsForm } from '@/components/forms/TransactionDetailsFor
 import { PayerForm } from '@/components/forms/PayerForm';
 import { BeneficiaryForm } from '@/components/forms/BeneficiaryForm';
 import { BoletoDetailsForm } from '@/components/forms/BoletoDetailsForm';
+import { ReceiptTemplate } from '@/types/template';
 
 interface PaymentFormProps {
   onSubmit: (data: PaymentData, logo?: CompanyLogo) => void;
   initialData?: PaymentData;
   initialLogo?: CompanyLogo;
   submitButtonText?: string;
+  template?: ReceiptTemplate;
 }
 
 export const PaymentForm: React.FC<PaymentFormProps> = ({ 
   onSubmit, 
   initialData,
   initialLogo,
-  submitButtonText = 'Gerar Comprovante'
+  submitButtonText = 'Gerar Comprovante',
+  template
 }) => {
   const [formData, setFormData] = useState<Partial<PaymentData>>(initialData || {
     tipo: 'PIX',
@@ -93,6 +96,9 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
     onSubmit(paymentData, logo);
   };
 
+  // Verificar se deve mostrar a seção do pagador
+  const showPayer = template?.config?.showPayer ?? true;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <TransactionDetailsForm 
@@ -100,10 +106,13 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
         onInputChange={handleInputChange} 
       />
       
-      <PayerForm 
-        formData={formData} 
-        onInputChange={handleInputChange} 
-      />
+      {showPayer && (
+        <PayerForm 
+          formData={formData} 
+          onInputChange={handleInputChange}
+          isOptional={!showPayer}
+        />
+      )}
       
       <BeneficiaryForm 
         formData={formData} 

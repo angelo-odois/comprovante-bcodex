@@ -8,16 +8,21 @@ import { PaymentData } from '@/types/payment';
 interface PayerFormProps {
   formData: Partial<PaymentData>;
   onInputChange: (section: string, field: string, value: string | number | Date) => void;
+  isOptional?: boolean;
 }
 
 export const PayerForm: React.FC<PayerFormProps> = ({
   formData,
-  onInputChange
+  onInputChange,
+  isOptional = false
 }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Dados do Pagador</CardTitle>
+        <CardTitle>
+          Dados do Pagador
+          {isOptional && <span className="text-sm font-normal text-muted-foreground ml-2">(Opcional)</span>}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -27,7 +32,7 @@ export const PayerForm: React.FC<PayerFormProps> = ({
               id="pagadorNome"
               value={formData.pagador?.nome || ''}
               onChange={(e) => onInputChange('pagador', 'nome', e.target.value)}
-              required
+              required={!isOptional}
             />
           </div>
           
@@ -37,7 +42,7 @@ export const PayerForm: React.FC<PayerFormProps> = ({
               id="pagadorCpfCnpj"
               value={formData.pagador?.cpfCnpj || ''}
               onChange={(e) => onInputChange('pagador', 'cpfCnpj', e.target.value)}
-              required
+              required={!isOptional}
             />
           </div>
         </div>
@@ -49,7 +54,7 @@ export const PayerForm: React.FC<PayerFormProps> = ({
               id="pagadorBanco"
               value={formData.pagador?.banco || ''}
               onChange={(e) => onInputChange('pagador', 'banco', e.target.value)}
-              required
+              required={!isOptional}
             />
           </div>
           
@@ -59,7 +64,7 @@ export const PayerForm: React.FC<PayerFormProps> = ({
               id="pagadorAgencia"
               value={formData.pagador?.agencia || ''}
               onChange={(e) => onInputChange('pagador', 'agencia', e.target.value)}
-              required
+              required={!isOptional}
             />
           </div>
           
@@ -69,7 +74,7 @@ export const PayerForm: React.FC<PayerFormProps> = ({
               id="pagadorConta"
               value={formData.pagador?.conta || ''}
               onChange={(e) => onInputChange('pagador', 'conta', e.target.value)}
-              required
+              required={!isOptional}
             />
           </div>
         </div>

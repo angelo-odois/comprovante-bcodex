@@ -29,6 +29,7 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
     isDefault: template?.isDefault || false,
     config: {
       showLogo: template?.config.showLogo ?? true,
+      showPayer: template?.config.showPayer ?? true,
       showBeneficiary: template?.config.showBeneficiary ?? true,
       showDescription: template?.config.showDescription ?? true,
       showFees: template?.config.showFees ?? false,
@@ -175,6 +176,15 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
                 onCheckedChange={(checked) => updateConfig('showLogo', checked)}
               />
               <Label htmlFor="showLogo">Mostrar logo da empresa</Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="showPayer"
+                checked={formData.config?.showPayer}
+                onCheckedChange={(checked) => updateConfig('showPayer', checked)}
+              />
+              <Label htmlFor="showPayer">Mostrar dados do pagador</Label>
             </div>
             
             <div className="flex items-center space-x-2">

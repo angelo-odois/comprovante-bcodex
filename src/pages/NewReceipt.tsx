@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PaymentForm } from '@/components/PaymentForm';
 import { PaymentReceipt } from '@/components/PaymentReceipt';
@@ -104,7 +103,10 @@ export default function NewReceipt() {
                 )}
               </CardHeader>
               <CardContent className="p-6">
-                <PaymentForm onSubmit={handlePaymentSubmit} />
+                <PaymentForm 
+                  onSubmit={handlePaymentSubmit} 
+                  template={selectedTemplate || undefined}
+                />
               </CardContent>
             </Card>
           </TabsContent>

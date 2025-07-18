@@ -13,6 +13,7 @@ export interface ReceiptTemplate {
   // Configurações do template
   config: {
     showLogo: boolean;
+    showPayer: boolean;
     showBeneficiary: boolean;
     showDescription: boolean;
     showFees: boolean;
