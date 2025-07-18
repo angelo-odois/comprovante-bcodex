@@ -8,7 +8,7 @@ import { generatePDF, downloadPDF } from '@/utils/pdfGenerator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Receipt, Settings, FileText } from 'lucide-react';
+import { Receipt, Settings, FileText, ArrowLeft, Sparkles } from 'lucide-react';
 import { MockReceiptDemo } from '@/components/MockReceiptDemo';
 import { TemplateManager } from '@/components/TemplateManager';
 import { ReceiptTemplate } from '@/types/template';
@@ -54,86 +54,121 @@ export default function NewReceipt() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Novo Comprovante</h1>
-        <p className="text-muted-foreground">
+    <div className="space-y-8">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          Novo Comprovante
+        </h1>
+        <p className="text-lg text-muted-foreground">
           Gere comprovantes profissionais de forma rápida e segura
         </p>
       </div>
 
       {!paymentData ? (
         <Tabs defaultValue="form" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="form" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-4 h-12 bg-muted/50">
+            <TabsTrigger value="form" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <FileText className="h-4 w-4" />
               Dados do Pagamento
             </TabsTrigger>
-            <TabsTrigger value="templates" className="flex items-center gap-2">
+            <TabsTrigger value="templates" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <Receipt className="h-4 w-4" />
               Templates
             </TabsTrigger>
-            <TabsTrigger value="demo" className="flex items-center gap-2">
-              <Receipt className="h-4 w-4" />
+            <TabsTrigger value="demo" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <Sparkles className="h-4 w-4" />
               Modelo PDF
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
+            <TabsTrigger value="settings" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <Settings className="h-4 w-4" />
               Configurações
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="form">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+          <TabsContent value="form" className="mt-6">
+            <Card className="border-0 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 rounded-t-lg">
+                <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
                   <Receipt className="h-5 w-5" />
                   Informações do Pagamento
                 </CardTitle>
                 {selectedTemplate && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-blue-600 dark:text-blue-400">
                     Usando template: <span className="font-medium">{selectedTemplate.name}</span>
                   </p>
                 )}
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
                 <PaymentForm onSubmit={handlePaymentSubmit} />
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="templates">
-            <TemplateManager
-              onSelectTemplate={handleTemplateSelect}
-              onCreateReceipt={handleCreateFromTemplate}
-            />
+          <TabsContent value="templates" className="mt-6">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/50 dark:to-pink-950/50 rounded-lg p-1">
+              <div className="bg-background rounded-lg">
+                <TemplateManager
+                  onSelectTemplate={handleTemplateSelect}
+                  onCreateReceipt={handleCreateFromTemplate}
+                />
+              </div>
+            </div>
           </TabsContent>
 
-          <TabsContent value="demo">
-            <MockReceiptDemo />
+          <TabsContent value="demo" className="mt-6">
+            <Card className="border-0 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-950/50 rounded-t-lg">
+                <CardTitle className="flex items-center gap-2 text-emerald-900 dark:text-emerald-100">
+                  <Sparkles className="h-5 w-5" />
+                  Demonstração do Modelo PDF
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <MockReceiptDemo />
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          <TabsContent value="settings">
-            <LogoUpload 
-              onLogoChange={setCompanyLogo} 
-              currentLogo={companyLogo}
-            />
+          <TabsContent value="settings" className="mt-6">
+            <Card className="border-0 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/50 dark:to-red-950/50 rounded-t-lg">
+                <CardTitle className="flex items-center gap-2 text-orange-900 dark:text-orange-100">
+                  <Settings className="h-5 w-5" />
+                  Configurações do Comprovante
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <LogoUpload 
+                  onLogoChange={setCompanyLogo} 
+                  currentLogo={companyLogo}
+                />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       ) : (
         <div className="space-y-6">
-          <div className="text-center">
-            <Button variant="outline" onClick={handleNewReceipt}>
-              ← Voltar para criar novo comprovante
+          <div className="flex justify-center">
+            <Button 
+              variant="outline" 
+              onClick={handleNewReceipt}
+              className="border-2 hover:bg-accent h-12 px-6"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar para criar novo comprovante
             </Button>
           </div>
           
-          <PaymentReceipt 
-            data={paymentData}
-            logo={companyLogo}
-            onDownloadPDF={handleDownloadPDF}
-            onPrint={handlePrint}
-          />
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/50 dark:to-emerald-950/50 rounded-lg p-1">
+            <div className="bg-background rounded-lg">
+              <PaymentReceipt 
+                data={paymentData}
+                logo={companyLogo}
+                onDownloadPDF={handleDownloadPDF}
+                onPrint={handlePrint}
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>
