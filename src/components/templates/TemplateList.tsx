@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,6 +40,7 @@ export const TemplateList: React.FC<TemplateListProps> = ({
       updatedAt: new Date(),
       config: {
         showLogo: true,
+        showPayer: true,
         showBeneficiary: true,
         showDescription: true,
         showFees: false,
@@ -64,6 +64,7 @@ export const TemplateList: React.FC<TemplateListProps> = ({
       updatedAt: new Date(),
       config: {
         showLogo: true,
+        showPayer: false,
         showBeneficiary: false,
         showDescription: true,
         showFees: true,
@@ -87,6 +88,7 @@ export const TemplateList: React.FC<TemplateListProps> = ({
       updatedAt: new Date(),
       config: {
         showLogo: false,
+        showPayer: true,
         showBeneficiary: true,
         showDescription: false,
         showFees: true,
