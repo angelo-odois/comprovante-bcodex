@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { PaymentForm } from '@/components/PaymentForm';
 import { PaymentReceipt } from '@/components/PaymentReceipt';
@@ -6,18 +7,24 @@ import { PaymentData, CompanyLogo } from '@/types/payment';
 import { generatePDF, downloadPDF } from '@/utils/pdfGenerator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Receipt, Settings, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Receipt, Settings, FileText, History as HistoryIcon } from 'lucide-react';
 import { MockReceiptDemo } from '@/components/MockReceiptDemo';
 import { TemplateManager } from '@/components/TemplateManager';
 import { ReceiptTemplate } from '@/types/template';
+import { useReceiptHistory } from '@/hooks/useReceiptHistory';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [companyLogo, setCompanyLogo] = useState<CompanyLogo | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<ReceiptTemplate | null>(null);
+  const { saveToHistory, history } = useReceiptHistory();
 
   const handlePaymentSubmit = (data: PaymentData) => {
     setPaymentData(data);
+    // Salvar automaticamente no histórico
+    saveToHistory(data, companyLogo, selectedTemplate?.id);
   };
 
   const handleTemplateSelect = (template: ReceiptTemplate) => {
@@ -53,13 +60,24 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            Sistema de Comprovantes de Pagamento
-          </h1>
-          <p className="text-gray-600 text-lg">
-            Gere comprovantes profissionais de forma rápida e segura
-          </p>
+        <div className="flex justify-between items-center mb-8">
+          <div className="text-center flex-1">
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">
+              Sistema de Comprovantes de Pagamento
+            </h1>
+            <p className="text-gray-600 text-lg">
+              Gere comprovantes profissionais de forma rápida e segura
+            </p>
+          </div>
+          
+          <div className="flex gap-2">
+            <Link to="/history">
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <HistoryIcon className="h-4 w-4" />
+                Histórico ({history.length})
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {!paymentData ? (
