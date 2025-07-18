@@ -1,8 +1,9 @@
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { User, Bell, Search, Sun, Moon } from "lucide-react";
+import { Bell, Search, Sun, Moon } from "lucide-react";
 import { useState } from "react";
+import { UserMenu } from "@/components/UserMenu";
 
 export function AppHeader() {
   const [isDark, setIsDark] = useState(false);
@@ -43,9 +44,7 @@ export function AppHeader() {
           {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </Button>
         <div className="h-6 w-px bg-border mx-2" />
-        <Button variant="ghost" size="icon" className="relative">
-          <User className="h-4 w-4" />
-        </Button>
+        <UserMenu />
       </div>
     </header>
   );

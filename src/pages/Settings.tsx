@@ -2,10 +2,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogoUpload } from "@/components/LogoUpload";
 import { TemplateManager } from "@/components/TemplateManager";
+import { UserProfile } from "@/components/UserProfile";
 import { useState } from "react";
 import { CompanyLogo } from "@/types/payment";
 import { ReceiptTemplate } from "@/types/template";
-import { Settings as SettingsIcon, Image, Receipt, Palette, Shield } from "lucide-react";
+import { Settings as SettingsIcon, Image, Receipt, Palette, Shield, User } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Settings() {
@@ -30,8 +31,12 @@ export default function Settings() {
         </p>
       </div>
 
-      <Tabs defaultValue="logo" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-12 bg-muted/50">
+      <Tabs defaultValue="profile" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 h-12 bg-muted/50">
+          <TabsTrigger value="profile" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <User className="h-4 w-4" />
+            Perfil
+          </TabsTrigger>
           <TabsTrigger value="logo" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
             <Image className="h-4 w-4" />
             Logo da Empresa
@@ -45,6 +50,10 @@ export default function Settings() {
             Aparência
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="profile" className="mt-6">
+          <UserProfile />
+        </TabsContent>
 
         <TabsContent value="logo" className="mt-6">
           <Card className="border-0 shadow-lg">
