@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Save, X, Loader2 } from 'lucide-react';
 import { ReceiptTemplate } from '@/types/template';
 import { useTemplates } from '@/hooks/useTemplates';
+import { toast } from '@/hooks/use-toast';
 
 interface TemplateEditorProps {
   template?: ReceiptTemplate | null;
@@ -32,17 +33,17 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
     type: template?.type || 'PIX',
     isDefault: template?.isDefault || false,
     config: {
-      showLogo: template?.config.showLogo ?? true,
-      showPayer: template?.config.showPayer ?? false,
-      showBeneficiary: template?.config.showBeneficiary ?? true,
-      showDescription: template?.config.showDescription ?? true,
-      showFees: template?.config.showFees ?? false,
-      customFields: template?.config.customFields || [],
+      showLogo: template?.config?.showLogo ?? true,
+      showPayer: template?.config?.showPayer ?? false,
+      showBeneficiary: template?.config?.showBeneficiary ?? true,
+      showDescription: template?.config?.showDescription ?? true,
+      showFees: template?.config?.showFees ?? false,
+      customFields: template?.config?.customFields || [],
       styling: {
-        headerColor: template?.config.styling.headerColor || 'hsl(var(--primary))',
-        accentColor: template?.config.styling.accentColor || 'hsl(var(--accent))',
-        fontSize: template?.config.styling.fontSize || 'medium',
-        layout: template?.config.styling.layout || 'standard'
+        headerColor: template?.config?.styling?.headerColor || 'hsl(var(--primary))',
+        accentColor: template?.config?.styling?.accentColor || 'hsl(var(--accent))',
+        fontSize: template?.config?.styling?.fontSize || 'medium',
+        layout: template?.config?.styling?.layout || 'standard'
       }
     },
     defaultData: template?.defaultData || {}
@@ -50,6 +51,11 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
 
   const handleSave = async () => {
     if (!formData.name || !formData.type) {
+      toast({
+        title: "Erro de validação",
+        description: "Nome e tipo do template são obrigatórios.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -59,12 +65,16 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
       if (template) {
         // Editando template existente
         await updateTemplate(template.id, formData);
-        const updatedTemplate: ReceiptTemplate = {
+        onSave({
           ...template,
           ...formData,
           updatedAt: new Date()
-        } as ReceiptTemplate;
-        onSave(updatedTemplate);
+        } as ReceiptTemplate);
+        
+        toast({
+          title: "Template atualizado",
+          description: "Template foi atualizado com sucesso.",
+        });
       } else {
         // Criando novo template
         const newTemplateData = {
@@ -76,19 +86,29 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
           defaultData: formData.defaultData!
         };
         
-        await saveTemplate(newTemplateData);
+        const savedTemplate = await saveTemplate(newTemplateData);
         
-        const newTemplate: ReceiptTemplate = {
-          id: `template-${Date.now()}`,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          ...newTemplateData
-        };
+        if (savedTemplate) {
+          onSave({
+            id: savedTemplate.id,
+            createdAt: new Date(savedTemplate.created_at),
+            updatedAt: new Date(savedTemplate.updated_at),
+            ...newTemplateData
+          });
+        }
         
-        onSave(newTemplate);
+        toast({
+          title: "Template criado",
+          description: "Template foi criado com sucesso.",
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao salvar template:', error);
+      toast({
+        title: "Erro ao salvar template",
+        description: error.message || "Ocorreu um erro inesperado.",
+        variant: "destructive",
+      });
     } finally {
       setSaving(false);
     }
@@ -258,7 +278,7 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
             <div>
               <Label htmlFor="layout">Layout</Label>
               <Select
-                value={formData.config?.styling.layout}
+                value={formData.config?.styling?.layout}
                 onValueChange={(value) => updateStyling('layout', value)}
               >
                 <SelectTrigger>
@@ -275,7 +295,7 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
             <div>
               <Label htmlFor="fontSize">Tamanho da fonte</Label>
               <Select
-                value={formData.config?.styling.fontSize}
+                value={formData.config?.styling?.fontSize}
                 onValueChange={(value) => updateStyling('fontSize', value)}
               >
                 <SelectTrigger>

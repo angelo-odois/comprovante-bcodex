@@ -11,15 +11,22 @@ export const useTemplates = () => {
   const { user } = useAuth();
 
   const fetchTemplates = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('receipt_templates')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao buscar templates:', error);
+        throw error;
+      }
       
       const formattedTemplates: ReceiptTemplate[] = (data || []).map(template => ({
         id: template.id,
@@ -35,6 +42,7 @@ export const useTemplates = () => {
       
       setTemplates(formattedTemplates);
     } catch (error: any) {
+      console.error('Erro ao carregar templates:', error);
       toast({
         title: "Erro ao carregar templates",
         description: error.message,
@@ -46,7 +54,9 @@ export const useTemplates = () => {
   };
 
   const saveTemplate = async (template: Omit<ReceiptTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
-    if (!user) return;
+    if (!user) {
+      throw new Error('Usuário não autenticado');
+    }
 
     try {
       const templateData = {
@@ -55,9 +65,11 @@ export const useTemplates = () => {
         description: template.description,
         type: template.type,
         is_default: template.isDefault,
-        config: JSON.parse(JSON.stringify(template.config)),
-        default_data: JSON.parse(JSON.stringify(template.defaultData)),
+        config: template.config,
+        default_data: template.defaultData,
       };
+
+      console.log('Salvando template:', templateData);
 
       const { data, error } = await supabase
         .from('receipt_templates')
@@ -65,16 +77,16 @@ export const useTemplates = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro do Supabase ao salvar template:', error);
+        throw error;
+      }
 
-      toast({
-        title: "Template salvo",
-        description: "Template criado com sucesso.",
-      });
-
-      fetchTemplates();
+      console.log('Template salvo com sucesso:', data);
+      await fetchTemplates();
       return data;
     } catch (error: any) {
+      console.error('Erro ao salvar template:', error);
       toast({
         title: "Erro ao salvar template",
         description: error.message,
@@ -85,6 +97,10 @@ export const useTemplates = () => {
   };
 
   const updateTemplate = async (id: string, updates: Partial<ReceiptTemplate>) => {
+    if (!user) {
+      throw new Error('Usuário não autenticado');
+    }
+
     try {
       const updateData: any = {};
       
@@ -92,52 +108,62 @@ export const useTemplates = () => {
       if (updates.description !== undefined) updateData.description = updates.description;
       if (updates.type !== undefined) updateData.type = updates.type;
       if (updates.isDefault !== undefined) updateData.is_default = updates.isDefault;
-      if (updates.config !== undefined) updateData.config = JSON.parse(JSON.stringify(updates.config));
-      if (updates.defaultData !== undefined) updateData.default_data = JSON.parse(JSON.stringify(updates.defaultData));
+      if (updates.config !== undefined) updateData.config = updates.config;
+      if (updates.defaultData !== undefined) updateData.default_data = updates.defaultData;
+
+      console.log('Atualizando template:', id, updateData);
 
       const { error } = await supabase
         .from('receipt_templates')
         .update(updateData)
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro do Supabase ao atualizar template:', error);
+        throw error;
+      }
 
-      toast({
-        title: "Template atualizado",
-        description: "Template atualizado com sucesso.",
-      });
-
-      fetchTemplates();
+      console.log('Template atualizado com sucesso');
+      await fetchTemplates();
     } catch (error: any) {
+      console.error('Erro ao atualizar template:', error);
       toast({
         title: "Erro ao atualizar template",
         description: error.message,
         variant: "destructive",
       });
+      throw error;
     }
   };
 
   const deleteTemplate = async (id: string) => {
+    if (!user) {
+      throw new Error('Usuário não autenticado');
+    }
+
     try {
+      console.log('Deletando template:', id);
+      
       const { error } = await supabase
         .from('receipt_templates')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro do Supabase ao deletar template:', error);
+        throw error;
+      }
 
-      toast({
-        title: "Template removido",
-        description: "Template removido com sucesso.",
-      });
-
-      fetchTemplates();
+      console.log('Template deletado com sucesso');
+      await fetchTemplates();
     } catch (error: any) {
+      console.error('Erro ao remover template:', error);
       toast({
         title: "Erro ao remover template",
         description: error.message,
         variant: "destructive",
       });
+      throw error;
     }
   };
 
