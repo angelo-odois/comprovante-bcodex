@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -85,7 +86,7 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
 
       <Card id="receipt-content" className="max-w-2xl mx-auto border shadow-sm">
         <CardContent className="p-8">
-          {/* Cabeçalho simples */}
+          {/* Cabeçalho */}
           <div className="text-center mb-8">
             {logo && (
               <div className="mb-6">
@@ -96,124 +97,142 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
                 />
               </div>
             )}
-            <h1 className="text-xl font-semibold text-foreground mb-2">Comprovante de Pagamento</h1>
-            <p className="text-sm text-muted-foreground">{data.tipo}</p>
+            <h1 className="text-xl font-bold text-foreground mb-4">COMPROVANTE DE PAGAMENTO</h1>
           </div>
 
-          {/* Valor e Status */}
-          <div className="text-center mb-8 pb-6 border-b">
-            <div className="mb-3">
-              <span className="inline-block px-3 py-1 bg-green-50 text-green-700 text-sm font-medium rounded-full">
-                {data.status}
-              </span>
-            </div>
-            <div className="text-3xl font-bold text-foreground">{formatCurrency(data.valor)}</div>
-            <div className="text-sm text-muted-foreground mt-1">{formatDateTime(data.dataHora)}</div>
-          </div>
-
-          {/* Detalhes em grid simples */}
-          <div className="space-y-6">
-            {/* Transação */}
-            <div>
-              <h3 className="text-sm font-medium text-foreground mb-3">Detalhes da Transação</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">ID</span>
-                  <span className="font-mono">{data.id}</span>
+          {/* Layout específico para Boleto */}
+          {data.tipo === 'Boleto' ? (
+            <div className="space-y-6">
+              {/* Data e hora + Tipo de operação */}
+              <div className="space-y-2">
+                <div>
+                  <span className="font-semibold">Data e hora: </span>
+                  {formatDateTime(data.dataHora)}
                 </div>
-                {data.tipo !== 'Boleto' && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">EndToEnd</span>
-                      <span className="font-mono text-xs">{data.transacao.endToEnd}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Autenticação</span>
-                      <span className="font-mono text-xs">{data.transacao.numeroAutenticacao}</span>
-                    </div>
-                  </>
-                )}
-                {data.transacao.descricao && (
-                  <div className="pt-2">
-                    <span className="text-muted-foreground block mb-1">Descrição</span>
-                    <span className="text-sm">{data.transacao.descricao}</span>
+                <div>
+                  <span className="font-semibold">Tipo de operação: </span>
+                  Pagamento de Conta
+                </div>
+              </div>
+
+              <hr className="border-t border-gray-300" />
+
+              {/* Beneficiário */}
+              {data.beneficiario.nome && (
+                <>
+                  <div>
+                    <div className="font-semibold mb-2">Beneficiário:</div>
+                    <div><span className="font-semibold">Nome: </span>{data.beneficiario.nome}</div>
                   </div>
-                )}
+                  <hr className="border-t border-gray-300" />
+                </>
+              )}
+
+              {/* Dados do Boleto */}
+              {data.dadosBoleto && (
+                <>
+                  <div className="space-y-1">
+                    <div><span className="font-semibold">Documento:</span></div>
+                    <div><span className="font-semibold">Código de barras: </span>{data.dadosBoleto.codigoBarras}</div>
+                    <div><span className="font-semibold">Data de vencimento: </span>{formatDate(data.dadosBoleto.dataVencimento)}</div>
+                    <div><span className="font-semibold">Data do pagamento: </span>{formatDate(data.dadosBoleto.dataPagamento)}</div>
+                    <div><span className="font-semibold">Valor do documento: </span>{formatCurrency(data.dadosBoleto.valorDocumento)}</div>
+                    <div><span className="font-semibold">(+) Multa: </span>{formatCurrency(data.dadosBoleto.multa)}</div>
+                    <div><span className="font-semibold">(+) Juros: </span>{formatCurrency(data.dadosBoleto.juros)}</div>
+                    <div><span className="font-semibold">(-) Descontos: </span>{formatCurrency(data.dadosBoleto.descontos)}</div>
+                  </div>
+                  <hr className="border-t border-gray-300" />
+                </>
+              )}
+
+              {/* Identificadores */}
+              <div className="space-y-1">
+                <div className="font-semibold mb-2">Identificadores:</div>
+                <div><span className="font-semibold">ID Referência: </span>{data.id}</div>
+                <div><span className="font-semibold">Nº Autenticação: </span>{data.transacao.numeroAutenticacao}</div>
+                <div><span className="font-semibold">Tipo: </span>Titulo/Boleto</div>
+              </div>
+
+              <hr className="border-t border-gray-300" />
+
+              {/* Forma de pagamento */}
+              <div className="space-y-1">
+                <div><span className="font-semibold">Forma de pagamento: </span>PIX</div>
+                <div><span className="font-semibold">E2EID: </span>{data.transacao.endToEnd}</div>
+                <div><span className="font-semibold">Valor cobrado: </span>{formatCurrency(data.valor)}</div>
+              </div>
+
+              <hr className="border-t border-gray-300" />
+
+              {/* Resumo final */}
+              <div className="text-center space-y-2">
+                <div><span className="font-semibold">Data e hora: </span>{formatDateTime(data.dataHora)}</div>
+                <div className="text-lg"><span className="font-semibold">Valor total cobrado: </span>{formatCurrency(data.valor)}</div>
               </div>
             </div>
+          ) : (
+            /* Layout padrão para outros tipos de pagamento */
+            <div className="space-y-6">
+              {/* Valor e Status */}
+              <div className="text-center mb-8 pb-6 border-b">
+                <div className="mb-3">
+                  <span className="inline-block px-3 py-1 bg-green-50 text-green-700 text-sm font-medium rounded-full">
+                    {data.status}
+                  </span>
+                </div>
+                <div className="text-3xl font-bold text-foreground">{formatCurrency(data.valor)}</div>
+                <div className="text-sm text-muted-foreground mt-1">{formatDateTime(data.dataHora)}</div>
+              </div>
 
-            {/* Dados do Boleto - só aparece se for boleto */}
-            {data.tipo === 'Boleto' && data.dadosBoleto && (
-              <div className="pt-4 border-t">
-                <h3 className="text-sm font-medium text-foreground mb-3">Dados do Boleto</h3>
+              {/* Transação */}
+              <div>
+                <h3 className="text-sm font-medium text-foreground mb-3">Detalhes da Transação</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Documento</span>
-                    <span className="font-mono">{data.dadosBoleto.documento}</span>
+                    <span className="text-muted-foreground">ID</span>
+                    <span className="font-mono">{data.id}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Código de Barras</span>
-                    <span className="font-mono text-xs">{data.dadosBoleto.codigoBarras}</span>
+                    <span className="text-muted-foreground">EndToEnd</span>
+                    <span className="font-mono text-xs">{data.transacao.endToEnd}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Data Vencimento</span>
-                    <span>{formatDate(data.dadosBoleto.dataVencimento)}</span>
+                    <span className="text-muted-foreground">Autenticação</span>
+                    <span className="font-mono text-xs">{data.transacao.numeroAutenticacao}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Data Pagamento</span>
-                    <span>{formatDate(data.dadosBoleto.dataPagamento)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Valor do Documento</span>
-                    <span>{formatCurrency(data.dadosBoleto.valorDocumento)}</span>
-                  </div>
-                  {data.dadosBoleto.multa > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">(+) Multa</span>
-                      <span className="text-red-600">{formatCurrency(data.dadosBoleto.multa)}</span>
-                    </div>
-                  )}
-                  {data.dadosBoleto.juros > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">(+) Juros</span>
-                      <span className="text-red-600">{formatCurrency(data.dadosBoleto.juros)}</span>
-                    </div>
-                  )}
-                  {data.dadosBoleto.descontos > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">(-) Descontos</span>
-                      <span className="text-green-600">{formatCurrency(data.dadosBoleto.descontos)}</span>
+                  {data.transacao.descricao && (
+                    <div className="pt-2">
+                      <span className="text-muted-foreground block mb-1">Descrição</span>
+                      <span className="text-sm">{data.transacao.descricao}</span>
                     </div>
                   )}
                 </div>
               </div>
-            )}
 
-            {/* Pagador */}
-            <div className="pt-4 border-t">
-              <h3 className="text-sm font-medium text-foreground mb-3">Pagador</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Nome</span>
-                  <span className="font-medium">{data.pagador.nome}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">CPF/CNPJ</span>
-                  <span className="font-mono">{formatCpfCnpj(data.pagador.cpfCnpj)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Banco</span>
-                  <span>{data.pagador.banco}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Conta</span>
-                  <span className="font-mono">{data.pagador.agencia}/{data.pagador.conta}</span>
+              {/* Pagador */}
+              <div className="pt-4 border-t">
+                <h3 className="text-sm font-medium text-foreground mb-3">Pagador</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Nome</span>
+                    <span className="font-medium">{data.pagador.nome}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">CPF/CNPJ</span>
+                    <span className="font-mono">{formatCpfCnpj(data.pagador.cpfCnpj)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Banco</span>
+                    <span>{data.pagador.banco}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Conta</span>
+                    <span className="font-mono">{data.pagador.agencia}/{data.pagador.conta}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Beneficiário - só aparece se não for boleto ou se tiver dados */}
-            {(data.tipo !== 'Boleto' || (data.beneficiario.nome && data.beneficiario.cpfCnpj)) && (
+              {/* Beneficiário */}
               <div className="pt-4 border-t">
                 <h3 className="text-sm font-medium text-foreground mb-3">Beneficiário</h3>
                 <div className="space-y-2 text-sm">
@@ -241,10 +260,10 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
                   )}
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* Rodapé minimalista */}
+          {/* Rodapé */}
           <div className="mt-8 pt-6 border-t text-center">
             <p className="text-xs text-muted-foreground">
               Documento gerado em {formatDateTime(new Date())}
