@@ -1,97 +1,109 @@
+
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { PaymentReceipt } from '@/types/payment';
+import { PaymentData, CompanyLogo } from '@/types/payment';
 import { toast } from '@/hooks/use-toast';
 
-// Mock data para comprovantes
-const mockReceipts: PaymentReceipt[] = [
-  {
-    id: '1',
-    userId: '899f1167-bc33-4587-8af5-2cca6ac8a9af',
-    templateId: '1',
-    logoId: null,
-    paymentType: 'PIX',
-    amount: 1500.00,
-    status: 'Aprovado',
-    paymentDate: new Date('2025-09-15T10:30:00').toISOString(),
-    payer: {
-      name: 'João Silva Santos',
-      document: '123.456.789-00',
-      bank: 'Banco do Brasil',
-      agency: '1234',
-      account: '56789-0'
-    },
-    beneficiary: {
-      name: 'Maria Oliveira',
-      document: '987.654.321-00',
-      bank: 'Itaú',
-      agency: '5678',
-      account: '12345-6',
-      pixKey: 'maria@email.com'
-    },
-    transaction: {
-      authNumber: 'AUT123456789',
-      endToEnd: 'E12345678202509151030123456789',
-      description: 'Pagamento de serviços',
-      fees: 0
-    },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: '2',
-    userId: '899f1167-bc33-4587-8af5-2cca6ac8a9af',
-    templateId: '2',
-    logoId: null,
-    paymentType: 'TED',
-    amount: 5000.00,
-    status: 'Aprovado',
-    paymentDate: new Date('2025-09-14T14:20:00').toISOString(),
-    payer: {
-      name: 'Empresa ABC Ltda',
-      document: '12.345.678/0001-00',
-      bank: 'Bradesco',
-      agency: '2468',
-      account: '13579-1'
-    },
-    beneficiary: {
-      name: 'Fornecedor XYZ',
-      document: '98.765.432/0001-00',
-      bank: 'Santander',
-      agency: '1357',
-      account: '24680-2'
-    },
-    transaction: {
-      authNumber: 'TED987654321',
-      description: 'Pagamento de fornecedor',
-      fees: 15.90
-    },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
+export interface ReceiptHistoryItem {
+  id: string;
+  paymentData: PaymentData;
+  logo?: CompanyLogo;
+  templateId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export const useReceipts = () => {
-  const [receipts, setReceipts] = useState<PaymentReceipt[]>([]);
+  const [receipts, setReceipts] = useState<ReceiptHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
   const fetchReceipts = async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
+    if (!user) return;
+    
     try {
-      setLoading(true);
-      // Simula delay de API
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const { data, error } = await supabase
+        .from('receipts')
+        .select(`
+          *,
+          company_logos (*)
+        `)
+        .order('created_at', { ascending: false });
 
-      // Filtra comprovantes do usuário
-      const userReceipts = mockReceipts.filter(r => r.userId === user.id);
-      setReceipts(userReceipts);
+      if (error) throw error;
+      
+      const formattedReceipts: ReceiptHistoryItem[] = (data || []).map(receipt => {
+        const paymentData: PaymentData = {
+          id: receipt.id,
+          tipo: receipt.payment_type as any,
+          valor: receipt.amount,
+          dataHora: new Date(receipt.payment_date),
+          status: receipt.status as any,
+          pagador: {
+            nome: receipt.payer_name,
+            cpfCnpj: receipt.payer_document,
+            banco: receipt.payer_bank,
+            agencia: receipt.payer_agency,
+            conta: receipt.payer_account
+          },
+          beneficiario: {
+            nome: receipt.beneficiary_name || '',
+            cpfCnpj: receipt.beneficiary_document || '',
+            banco: receipt.beneficiary_bank || '',
+            agencia: receipt.beneficiary_agency || '',
+            conta: receipt.beneficiary_account || '',
+            chavePix: receipt.beneficiary_pix_key || ''
+          },
+          transacao: {
+            numeroAutenticacao: receipt.auth_number,
+            endToEnd: receipt.end_to_end || '',
+            descricao: receipt.description || ''
+          }
+        };
+
+        // Add boleto data if it exists
+        if (receipt.boleto_document) {
+          paymentData.dadosBoleto = {
+            documento: receipt.boleto_document,
+            codigoBarras: receipt.boleto_barcode || '',
+            dataVencimento: receipt.boleto_due_date ? new Date(receipt.boleto_due_date) : new Date(),
+            dataPagamento: receipt.boleto_payment_date ? new Date(receipt.boleto_payment_date) : new Date(),
+            valorDocumento: receipt.boleto_document_value || 0,
+            multa: receipt.boleto_fine || 0,
+            juros: receipt.boleto_interest || 0,
+            descontos: receipt.boleto_discount || 0
+          };
+        }
+
+        // Add card data if it exists
+        if (receipt.card_brand) {
+          paymentData.dadosCartao = {
+            bandeira: receipt.card_brand,
+            ultimosDigitos: receipt.card_last_digits || '',
+            parcelas: receipt.card_installments || 1
+          };
+        }
+
+        const logo = receipt.company_logos ? {
+          url: receipt.company_logos.url,
+          name: receipt.company_logos.name,
+          size: receipt.company_logos.file_size,
+          type: receipt.company_logos.file_type
+        } : undefined;
+
+        return {
+          id: receipt.id,
+          paymentData,
+          logo,
+          templateId: receipt.template_id,
+          createdAt: new Date(receipt.created_at),
+          updatedAt: new Date(receipt.updated_at)
+        };
+      });
+      
+      setReceipts(formattedReceipts);
     } catch (error: any) {
-      console.error('Erro ao buscar comprovantes:', error);
       toast({
         title: "Erro ao carregar comprovantes",
         description: error.message,
@@ -102,70 +114,117 @@ export const useReceipts = () => {
     }
   };
 
-  const createReceipt = async (receiptData: Omit<PaymentReceipt, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
+  const saveReceipt = async (
+    paymentData: PaymentData, 
+    logo?: CompanyLogo, 
+    templateId?: string
+  ) => {
     if (!user) return;
 
     try {
-      const newReceipt: PaymentReceipt = {
-        ...receiptData,
-        id: Math.random().toString(36).substr(2, 9),
-        userId: user.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+      let logoId = null;
+      
+      // Save logo if provided
+      if (logo) {
+        const { data: logoData, error: logoError } = await supabase
+          .from('company_logos')
+          .insert({
+            user_id: user.id,
+            name: logo.name,
+            url: logo.url,
+            file_size: logo.size || null,
+            file_type: logo.type || null
+          })
+          .select()
+          .single();
+
+        if (logoError) throw logoError;
+        if (!logoData) throw new Error("Falha ao salvar logo");
+        logoId = logoData.id;
+      }
+
+      // Save receipt
+      const receiptData = {
+        user_id: user.id,
+        template_id: templateId,
+        logo_id: logoId,
+        payment_type: paymentData.tipo,
+        amount: paymentData.valor,
+        status: paymentData.status,
+        payment_date: paymentData.dataHora.toISOString(),
+        payer_name: paymentData.pagador.nome,
+        payer_document: paymentData.pagador.cpfCnpj,
+        payer_bank: paymentData.pagador.banco,
+        payer_agency: paymentData.pagador.agencia,
+        payer_account: paymentData.pagador.conta,
+        beneficiary_name: paymentData.beneficiario?.nome,
+        beneficiary_document: paymentData.beneficiario?.cpfCnpj,
+        beneficiary_bank: paymentData.beneficiario?.banco,
+        beneficiary_agency: paymentData.beneficiario?.agencia,
+        beneficiary_account: paymentData.beneficiario?.conta,
+        beneficiary_pix_key: paymentData.beneficiario?.chavePix,
+        auth_number: paymentData.transacao.numeroAutenticacao,
+        end_to_end: paymentData.transacao.endToEnd,
+        description: paymentData.transacao.descricao,
+        fees: 0,
+        ...(paymentData.dadosBoleto && {
+          boleto_document: paymentData.dadosBoleto.documento,
+          boleto_barcode: paymentData.dadosBoleto.codigoBarras,
+          boleto_due_date: paymentData.dadosBoleto.dataVencimento.toISOString().split('T')[0],
+          boleto_payment_date: paymentData.dadosBoleto.dataPagamento.toISOString().split('T')[0],
+          boleto_document_value: paymentData.dadosBoleto.valorDocumento,
+          boleto_fine: paymentData.dadosBoleto.multa,
+          boleto_interest: paymentData.dadosBoleto.juros,
+          boleto_discount: paymentData.dadosBoleto.descontos
+        }),
+        ...(paymentData.dadosCartao && {
+          card_brand: paymentData.dadosCartao.bandeira,
+          card_last_digits: paymentData.dadosCartao.ultimosDigitos,
+          card_installments: paymentData.dadosCartao.parcelas
+        })
       };
 
-      setReceipts(prev => [newReceipt, ...prev]);
+      const { data, error } = await supabase
+        .from('receipts')
+        .insert([receiptData])
+        .select()
+        .single();
+
+      if (error) throw error;
 
       toast({
-        title: "Comprovante criado",
-        description: "Comprovante criado com sucesso!",
+        title: "Comprovante salvo",
+        description: "Comprovante salvo com sucesso no histórico.",
       });
 
-      return newReceipt;
+      fetchReceipts();
+      return data;
     } catch (error: any) {
-      console.error('Erro ao criar comprovante:', error);
       toast({
-        title: "Erro ao criar comprovante",
+        title: "Erro ao salvar comprovante",
         description: error.message,
         variant: "destructive",
       });
-    }
-  };
-
-  const updateReceipt = async (id: string, receiptData: Partial<PaymentReceipt>) => {
-    try {
-      setReceipts(prev =>
-        prev.map(receipt =>
-          receipt.id === id
-            ? { ...receipt, ...receiptData, updatedAt: new Date().toISOString() }
-            : receipt
-        )
-      );
-
-      toast({
-        title: "Comprovante atualizado",
-        description: "Comprovante atualizado com sucesso!",
-      });
-    } catch (error: any) {
-      console.error('Erro ao atualizar comprovante:', error);
-      toast({
-        title: "Erro ao atualizar comprovante",
-        description: error.message,
-        variant: "destructive",
-      });
+      throw error;
     }
   };
 
   const deleteReceipt = async (id: string) => {
     try {
-      setReceipts(prev => prev.filter(receipt => receipt.id !== id));
+      const { error } = await supabase
+        .from('receipts')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
 
       toast({
         title: "Comprovante removido",
-        description: "Comprovante removido com sucesso!",
+        description: "Comprovante removido com sucesso.",
       });
+
+      fetchReceipts();
     } catch (error: any) {
-      console.error('Erro ao remover comprovante:', error);
       toast({
         title: "Erro ao remover comprovante",
         description: error.message,
@@ -181,9 +240,8 @@ export const useReceipts = () => {
   return {
     receipts,
     loading,
-    fetchReceipts,
-    createReceipt,
-    updateReceipt,
+    saveReceipt,
     deleteReceipt,
+    fetchReceipts,
   };
 };
