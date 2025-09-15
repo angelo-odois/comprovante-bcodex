@@ -26,7 +26,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Expor porta
-EXPOSE 80
+EXPOSE 8089
 
 # Comando de inicialização
 CMD ["nginx", "-g", "daemon off;"]
