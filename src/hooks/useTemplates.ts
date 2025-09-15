@@ -11,7 +11,6 @@ const mockTemplates: ReceiptTemplate[] = [
     description: 'Template padrão para comprovantes PIX',
     type: 'PIX',
     isDefault: true,
-    userId: '899f1167-bc33-4587-8af5-2cca6ac8a9af',
     config: {
       showLogo: true,
       showPayer: true,
@@ -27,8 +26,8 @@ const mockTemplates: ReceiptTemplate[] = [
       }
     },
     defaultData: {},
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: new Date(),
+    updatedAt: new Date()
   },
   {
     id: '2',
@@ -36,7 +35,6 @@ const mockTemplates: ReceiptTemplate[] = [
     description: 'Template para transferências TED empresariais',
     type: 'TED',
     isDefault: false,
-    userId: '899f1167-bc33-4587-8af5-2cca6ac8a9af',
     config: {
       showLogo: true,
       showPayer: true,
@@ -52,8 +50,8 @@ const mockTemplates: ReceiptTemplate[] = [
       }
     },
     defaultData: {},
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: new Date(),
+    updatedAt: new Date()
   }
 ];
 
@@ -73,9 +71,8 @@ export const useTemplates = () => {
       // Simula delay de API
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Filtra templates do usuário
-      const userTemplates = mockTemplates.filter(t => t.userId === user.id);
-      setTemplates(userTemplates);
+      // Return all templates for now
+      setTemplates(mockTemplates);
     } catch (error: any) {
       console.error('Erro ao buscar templates:', error);
       toast({
@@ -88,16 +85,15 @@ export const useTemplates = () => {
     }
   };
 
-  const createTemplate = async (templateData: Omit<ReceiptTemplate, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
+  const saveTemplate = async (templateData: Omit<ReceiptTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!user) return;
 
     try {
       const newTemplate: ReceiptTemplate = {
         ...templateData,
         id: Math.random().toString(36).substr(2, 9),
-        userId: user.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
 
       setTemplates(prev => [newTemplate, ...prev]);
@@ -118,12 +114,16 @@ export const useTemplates = () => {
     }
   };
 
+  const createTemplate = async (templateData: Omit<ReceiptTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
+    return await saveTemplate(templateData);
+  };
+
   const updateTemplate = async (id: string, templateData: Partial<ReceiptTemplate>) => {
     try {
       setTemplates(prev =>
         prev.map(template =>
           template.id === id
-            ? { ...template, ...templateData, updatedAt: new Date().toISOString() }
+            ? { ...template, ...templateData, updatedAt: new Date() }
             : template
         )
       );
@@ -168,6 +168,7 @@ export const useTemplates = () => {
     templates,
     loading,
     fetchTemplates,
+    saveTemplate,
     createTemplate,
     updateTemplate,
     deleteTemplate,

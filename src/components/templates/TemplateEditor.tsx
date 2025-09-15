@@ -98,8 +98,8 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
         if (savedTemplate) {
           const fullTemplate: ReceiptTemplate = {
             id: savedTemplate.id,
-            createdAt: new Date(savedTemplate.created_at),
-            updatedAt: new Date(savedTemplate.updated_at),
+            createdAt: new Date(savedTemplate.createdAt),
+            updatedAt: new Date(savedTemplate.updatedAt),
             ...newTemplateData
           };
           onSave(fullTemplate);

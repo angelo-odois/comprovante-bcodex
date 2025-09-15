@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { PaymentForm } from '@/components/PaymentForm';
 import { PaymentReceipt } from '@/components/PaymentReceipt';
 import { LogoUpload } from '@/components/LogoUpload';
@@ -8,18 +9,27 @@ import { generatePDF, downloadPDF } from '@/utils/pdfGenerator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Receipt, Settings, FileText, History as HistoryIcon } from 'lucide-react';
+import { Receipt, Settings, FileText, History as HistoryIcon, LogIn, LogOut, User } from 'lucide-react';
 import { MockReceiptDemo } from '@/components/MockReceiptDemo';
 import { TemplateManager } from '@/components/TemplateManager';
 import { ReceiptTemplate } from '@/types/template';
 import { useReceiptHistory } from '@/hooks/useReceiptHistory';
-import { Link } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user, loading, signOut } = useAuth();
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [companyLogo, setCompanyLogo] = useState<CompanyLogo | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<ReceiptTemplate | null>(null);
   const { saveToHistory, history } = useReceiptHistory();
+
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
 
   const handlePaymentSubmit = (data: PaymentData) => {
     setPaymentData(data);
@@ -57,6 +67,42 @@ const Index = () => {
     setPaymentData(null);
   };
 
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle>Sistema de Comprovantes</CardTitle>
+            <p className="text-muted-foreground">
+              Faça login para acessar o sistema
+            </p>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Link to="/auth">
+              <Button className="w-full">
+                <LogIn className="h-4 w-4 mr-2" />
+                Fazer Login
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="container mx-auto px-4 py-8">
@@ -77,7 +123,23 @@ const Index = () => {
                 Histórico ({history.length})
               </Button>
             </Link>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair
+            </Button>
           </div>
+        </div>
+
+        <div className="mb-4 text-right">
+          <p className="text-sm text-muted-foreground">
+            Logado como: <span className="font-medium">{user.email}</span>
+          </p>
         </div>
 
         {!paymentData ? (
