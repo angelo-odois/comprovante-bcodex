@@ -16,7 +16,10 @@
     "db:create": "node src/scripts/create-database.cjs",
     "db:migrate": "node src/scripts/migrate.cjs",
     "db:test": "node src/scripts/test-connection.cjs",
-    "db:setup": "npm run db:create && npm run db:migrate"
+    "db:setup": "npm run db:create && npm run db:migrate",
+    "user:create": "node src/scripts/create-user.cjs",
+    "user:admin": "node src/scripts/create-user-auto.cjs",
+    "user:list": "node src/scripts/list-users.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

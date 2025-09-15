@@ -7,121 +7,48 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Save, User, Mail, Building } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-
-interface Profile {
-  id: string;
-  full_name: string | null;
-  email: string | null;
-  company_name: string | null;
-  created_at: string;
-  updated_at: string;
-}
 
 export const UserProfile = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [formData, setFormData] = useState({
     full_name: '',
     company_name: '',
   });
 
-  const loadProfile = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-
-      if (data) {
-        setProfile(data);
-        setFormData({
-          full_name: data.full_name || user.user_metadata?.full_name || '',
-          company_name: data.company_name || '',
-        });
-      } else {
-        // Create profile if it doesn't exist
-        const { data: newProfile, error: createError } = await supabase
-          .from('profiles')
-          .insert({
-            id: user.id,
-            full_name: user.user_metadata?.full_name || '',
-            email: user.email,
-          })
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        
-        setProfile(newProfile);
-        setFormData({
-          full_name: newProfile.full_name || '',
-          company_name: newProfile.company_name || '',
-        });
-      }
-    } catch (error: any) {
-      console.error('Erro ao carregar perfil:', error);
-      toast({
-        title: "Erro ao carregar perfil",
-        description: error.message,
-        variant: "destructive",
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        full_name: user.full_name || '',
+        company_name: user.company_name || '',
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [user]);
 
   const handleSave = async () => {
-    if (!user || !profile) return;
-
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          full_name: formData.full_name.trim() || null,
-          company_name: formData.company_name.trim() || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
-
-      if (error) throw error;
+      // Em uma implementação completa, aqui faria chamada para API
+      // Por enquanto, apenas simula salvamento
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       toast({
         title: "Perfil atualizado",
-        description: "Suas informações foram salvas com sucesso.",
+        description: "Suas informações foram salvas com sucesso. (Funcionalidade de salvamento será implementada na API)",
       });
-
-      // Reload profile to get updated data
-      await loadProfile();
     } catch (error: any) {
       console.error('Erro ao salvar perfil:', error);
       toast({
         title: "Erro ao salvar perfil",
-        description: error.message,
+        description: "Ocorreu um erro ao tentar salvar as informações.",
         variant: "destructive",
       });
     } finally {
       setSaving(false);
     }
   };
-
-  useEffect(() => {
-    if (user) {
-      loadProfile();
-    }
-  }, [user]);
 
   const getInitials = (name?: string) => {
     if (!name) return 'U';
@@ -228,7 +155,7 @@ export const UserProfile = () => {
         </CardContent>
       </Card>
 
-      {profile && (
+      {user && (
         <Card>
           <CardHeader>
             <CardTitle>Informações da Conta</CardTitle>
@@ -237,15 +164,11 @@ export const UserProfile = () => {
             <div className="grid gap-4 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">ID do Usuário:</span>
-                <span className="font-mono">{profile.id}</span>
+                <span className="font-mono">{user.id}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Conta criada em:</span>
-                <span>{new Date(profile.created_at).toLocaleDateString('pt-BR')}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Última atualização:</span>
-                <span>{new Date(profile.updated_at).toLocaleDateString('pt-BR')}</span>
+                <span>{new Date(user.created_at).toLocaleDateString('pt-BR')}</span>
               </div>
             </div>
           </CardContent>
