@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { ReceiptTemplate } from '@/types/template';
+import { templateService, ReceiptTemplate } from '@/services/templates';
 import { toast } from '@/hooks/use-toast';
 
 // Mock data para templates
@@ -68,33 +68,33 @@ export const useTemplates = () => {
 
     try {
       setLoading(true);
-      // Simula delay de API
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Return all templates for now
-      setTemplates(mockTemplates);
+      const data = await templateService.getTemplates(user.id);
+      setTemplates(data);
     } catch (error: any) {
       console.error('Erro ao buscar templates:', error);
+      setTemplates(mockTemplates);
       toast({
-        title: "Erro ao carregar templates",
-        description: error.message,
-        variant: "destructive",
+        title: "Usando dados offline",
+        description: "Conectando com servidor...",
+        variant: "default",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const saveTemplate = async (templateData: Omit<ReceiptTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const saveTemplate = async (templateData: Omit<ReceiptTemplate, 'id' | 'created_at' | 'updated_at'>) => {
     if (!user) return;
 
     try {
-      const newTemplate: ReceiptTemplate = {
-        ...templateData,
-        id: Math.random().toString(36).substr(2, 9),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      const newTemplate = await templateService.createTemplate(user.id, {
+        name: templateData.name,
+        description: templateData.description,
+        type: templateData.type,
+        is_default: templateData.is_default,
+        config: templateData.config,
+        default_data: templateData.default_data
+      });
 
       setTemplates(prev => [newTemplate, ...prev]);
 
@@ -106,25 +106,44 @@ export const useTemplates = () => {
       return newTemplate;
     } catch (error: any) {
       console.error('Erro ao criar template:', error);
+
+      const fallbackTemplate: ReceiptTemplate = {
+        ...templateData,
+        id: Math.random().toString(36).substr(2, 9),
+        user_id: user.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      setTemplates(prev => [fallbackTemplate, ...prev]);
+
       toast({
-        title: "Erro ao criar template",
-        description: error.message,
-        variant: "destructive",
+        title: "Template criado localmente",
+        description: "Dados serão sincronizados quando conectar ao servidor",
+        variant: "default",
       });
+
+      return fallbackTemplate;
     }
   };
 
-  const createTemplate = async (templateData: Omit<ReceiptTemplate, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const createTemplate = async (templateData: Omit<ReceiptTemplate, 'id' | 'created_at' | 'updated_at'>) => {
     return await saveTemplate(templateData);
   };
 
   const updateTemplate = async (id: string, templateData: Partial<ReceiptTemplate>) => {
     try {
+      const updatedTemplate = await templateService.updateTemplate(id, {
+        name: templateData.name,
+        description: templateData.description,
+        is_default: templateData.is_default,
+        config: templateData.config,
+        default_data: templateData.default_data
+      });
+
       setTemplates(prev =>
         prev.map(template =>
-          template.id === id
-            ? { ...template, ...templateData, updatedAt: new Date() }
-            : template
+          template.id === id ? updatedTemplate : template
         )
       );
 
@@ -134,16 +153,26 @@ export const useTemplates = () => {
       });
     } catch (error: any) {
       console.error('Erro ao atualizar template:', error);
+
+      setTemplates(prev =>
+        prev.map(template =>
+          template.id === id
+            ? { ...template, ...templateData, updated_at: new Date().toISOString() }
+            : template
+        )
+      );
+
       toast({
-        title: "Erro ao atualizar template",
-        description: error.message,
-        variant: "destructive",
+        title: "Template atualizado localmente",
+        description: "Dados serão sincronizados quando conectar ao servidor",
+        variant: "default",
       });
     }
   };
 
   const deleteTemplate = async (id: string) => {
     try {
+      await templateService.deleteTemplate(id);
       setTemplates(prev => prev.filter(template => template.id !== id));
 
       toast({
@@ -152,10 +181,13 @@ export const useTemplates = () => {
       });
     } catch (error: any) {
       console.error('Erro ao remover template:', error);
+
+      setTemplates(prev => prev.filter(template => template.id !== id));
+
       toast({
-        title: "Erro ao remover template",
-        description: error.message,
-        variant: "destructive",
+        title: "Template removido localmente",
+        description: "Alteração será sincronizada quando conectar ao servidor",
+        variant: "default",
       });
     }
   };

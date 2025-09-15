@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { receiptService, Receipt } from '@/services/receipts';
+import { logoService } from '@/services/logos';
 import { useAuth } from '@/hooks/useAuth';
 import { PaymentData, CompanyLogo } from '@/types/payment';
 import { toast } from '@/hooks/use-toast';
