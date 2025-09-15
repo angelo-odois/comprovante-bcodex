@@ -1,0 +1,27 @@
+# Dockerfile simples para servir arquivos estáticos
+FROM nginx:alpine
+
+# Copiar arquivos estáticos (vamos criar um build manual)
+COPY public/ /usr/share/nginx/html/
+COPY index.html /usr/share/nginx/html/
+
+# Configuração Nginx simplificada
+RUN echo 'server { \
+    listen 8089; \
+    server_name _; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+    location /health { \
+        return 200 "healthy\\n"; \
+        add_header Content-Type text/plain; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
+
+# Expor porta
+EXPOSE 8089
+
+# Comando de inicialização
+CMD ["nginx", "-g", "daemon off;"]

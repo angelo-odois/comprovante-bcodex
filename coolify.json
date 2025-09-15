@@ -7,7 +7,7 @@
     "args": {}
   },
   "deploy": {
-    "port": 8089,
+    "port": 80,
     "healthcheck": {
       "path": "/health",
       "interval": 30,

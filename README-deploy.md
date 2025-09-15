@@ -13,7 +13,7 @@ DATABASE_URL=postgres://postgres:vcClbZixT5W8M6wiBf6oocvrnsGrEPG0EGlvcSnKZ7sGhIQ
 
 ### 2. Configurações de Deploy
 
-- **Porta**: 8089
+- **Porta**: 80 (padrão Docker - Coolify gerencia proxy)
 - **Health Check**: `/health`
 - **Dockerfile**: `Dockerfile` (raiz do projeto)
 - **Contexto**: `.` (raiz do projeto)
@@ -31,7 +31,7 @@ DATABASE_URL=postgres://postgres:vcClbZixT5W8M6wiBf6oocvrnsGrEPG0EGlvcSnKZ7sGhIQ
 3. **Build Settings**
    - Build Pack: Docker
    - Dockerfile: `Dockerfile`
-   - Port: `8089`
+   - Port: `80`
 
 4. **Environment Variables**
    ```

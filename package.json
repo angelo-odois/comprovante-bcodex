@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "docker:build": "docker build -t comprovante-m53 .",
-    "docker:run": "docker run -p 8089:8089 comprovante-m53",
+    "docker:run": "docker run -p 3000:80 comprovante-m53",
     "docker:dev": "docker-compose --profile dev up",
     "db:create": "node src/scripts/create-database.cjs",
     "db:migrate": "node src/scripts/migrate.cjs",

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,7 +47,7 @@ export const UserProfile = () => {
       if (data) {
         setProfile(data);
         setFormData({
-          full_name: data.full_name || user.user_metadata?.full_name || '',
+          full_name: data.full_name || user.full_name || '',
           company_name: data.company_name || '',
         });
       } else {
@@ -56,7 +56,7 @@ export const UserProfile = () => {
           .from('profiles')
           .insert({
             id: user.id,
-            full_name: user.user_metadata?.full_name || '',
+            full_name: user.full_name || '',
             email: user.email,
           })
           .select()
