@@ -63,6 +63,7 @@ export const UserProfile = () => {
           .single();
 
         if (createError) throw createError;
+        if (!newProfile) throw new Error('Falha ao criar perfil');
         
         setProfile(newProfile);
         setFormData({

@@ -139,6 +139,7 @@ export const useReceipts = () => {
           .single();
 
         if (logoError) throw logoError;
+        if (!logoData) throw new Error("Falha ao salvar logo");
         logoId = logoData.id;
       }
 
