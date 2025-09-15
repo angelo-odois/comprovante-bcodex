@@ -19,7 +19,8 @@
     "db:setup": "npm run db:create && npm run db:migrate",
     "user:create": "node src/scripts/create-user.cjs",
     "user:admin": "node src/scripts/create-user-auto.cjs",
-    "user:list": "node src/scripts/list-users.cjs"
+    "user:list": "node src/scripts/list-users.cjs",
+    "db:recreate": "node src/scripts/recreate-database.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
