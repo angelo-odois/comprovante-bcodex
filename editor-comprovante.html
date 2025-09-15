@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Comprovantes M-53</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            body { background: white !important; }
+            .no-print { display: none !important; }
+            .receipt-container {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+                margin: 0 !important;
+                max-width: none !important;
+            }
+            .print-page {
+                page-break-after: always;
+            }
+        }
+        .receipt-container {
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .form-input {
+            transition: all 0.3s ease;
+        }
+        .form-input:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="no-print bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                            <span class="text-white font-bold text-lg">M</span>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-gray-800">Editor de Comprovantes M-53</h1>
+                            <p class="text-sm text-gray-600">Sistema de Edição e Geração</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="saveTemplate()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                            💾 Salvar Template
+                        </button>
+                        <button onclick="loadTemplate()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                            📂 Carregar Template
+                        </button>
+                        <button onclick="printReceipt()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                            🖨️ Imprimir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="max-w-7xl mx-auto p-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Painel de Edição -->
+                <div class="no-print space-y-6">
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h2 class="text-lg font-semibold mb-4 text-gray-800">📝 Configurações do Pagamento</h2>
+
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-gray-700">Tipo de Pagamento</label>
+                                <select id="paymentType" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="PIX">PIX</option>
+                                    <option value="TED">TED</option>
+                                    <option value="DOC">DOC</option>
+                                    <option value="Boleto">Boleto</option>
+                                    <option value="Cartão">Cartão</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-gray-700">Status</label>
+                                <select id="status" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="Aprovado">Aprovado</option>
+                                    <option value="Pendente">Pendente</option>
+                                    <option value="Rejeitado">Rejeitado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-gray-700">Valor (R$)</label>
+                                <input type="number" id="amount" value="1250.00" step="0.01" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-gray-700">Data/Hora</label>
+                                <input type="datetime-local" id="dateTime" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-gray-700">Nº Autenticação</label>
+                                <input type="text" id="authNumber" value="AUTH123456789" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-gray-700">End to End</label>
+                                <input type="text" id="endToEnd" value="E12345678920250915" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dados do Pagador -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800">👤 Dados do Pagador</h3>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Nome Completo</label>
+                                    <input type="text" id="payerName" value="João Silva Santos" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">CPF/CNPJ</label>
+                                    <input type="text" id="payerDocument" value="123.456.789-01" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Banco</label>
+                                    <input type="text" id="payerBank" value="Banco do Brasil (001)" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Agência</label>
+                                    <input type="text" id="payerAgency" value="1234-5" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Conta</label>
+                                    <input type="text" id="payerAccount" value="12345-6" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dados do Beneficiário -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800">🏢 Dados do Beneficiário</h3>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Nome/Razão Social</label>
+                                    <input type="text" id="beneficiaryName" value="Empresa Exemplo LTDA" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">CPF/CNPJ</label>
+                                    <input type="text" id="beneficiaryDocument" value="12.345.678/0001-90" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+                            <div id="pixKeyField">
+                                <label class="block text-sm font-medium mb-2 text-gray-700">Chave PIX</label>
+                                <input type="text" id="pixKey" value="exemplo@empresa.com.br" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div id="bankFields" style="display: none;" class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Banco</label>
+                                    <input type="text" id="beneficiaryBank" value="Caixa Econômica (104)" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Ag/Conta</label>
+                                    <input type="text" id="beneficiaryAccount" value="5678-9 / 98765-4" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dados Específicos -->
+                    <div id="specificData" class="bg-white rounded-lg shadow-sm p-6">
+                        <!-- Boleto -->
+                        <div id="boletoFields" style="display: none;">
+                            <h3 class="text-lg font-semibold mb-4 text-gray-800">📄 Dados do Boleto</h3>
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Documento</label>
+                                    <input type="text" id="boletoDocument" value="BOL123456789" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Vencimento</label>
+                                    <input type="date" id="boletoDueDate" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Valor Original</label>
+                                    <input type="number" id="boletoOriginalValue" value="1200.00" step="0.01" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Juros/Multa</label>
+                                    <input type="number" id="boletoFees" value="50.00" step="0.01" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Desconto</label>
+                                    <input type="number" id="boletoDiscount" value="0.00" step="0.01" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-gray-700">Código de Barras</label>
+                                <input type="text" id="boletoBarcode" value="12345.67890 12345.678901 12345.678901 1 23450000125000" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <!-- Cartão -->
+                        <div id="cardFields" style="display: none;">
+                            <h3 class="text-lg font-semibold mb-4 text-gray-800">💳 Dados do Cartão</h3>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Bandeira</label>
+                                    <select id="cardBrand" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="Visa">Visa</option>
+                                        <option value="Mastercard">Mastercard</option>
+                                        <option value="Elo">Elo</option>
+                                        <option value="American Express">American Express</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Últimos Dígitos</label>
+                                    <input type="text" id="cardLastDigits" value="1234" maxlength="4" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-700">Parcelas</label>
+                                    <input type="number" id="cardInstallments" value="1" min="1" max="24" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Descrição -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800">📝 Descrição</h3>
+                        <textarea id="description" rows="3" class="form-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Descrição do pagamento...">Pagamento referente à prestação de serviços de consultoria tecnológica - Período: Setembro/2025</textarea>
+                    </div>
+
+                    <!-- Ações -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800">⚡ Ações Rápidas</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="clearForm()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                                🗑️ Limpar Formulário
+                            </button>
+                            <button onclick="generateRandom()" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors">
+                                🎲 Dados Aleatórios
+                            </button>
+                            <button onclick="previewReceipt()" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors">
+                                👁️ Visualizar
+                            </button>
+                            <button onclick="updateReceipt()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                                🔄 Atualizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview do Comprovante -->
+                <div class="receipt-container rounded-lg p-6 print-page">
+                    <div id="receipt">
+                        <!-- Header -->
+                        <div class="text-center border-b-2 border-gray-200 pb-4 mb-6">
+                            <div class="flex items-center justify-center mb-2">
+                                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzM3NTFmZiIvPgo8dGV4dCB4PSIyMCIgeT0iMjYiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5NPC90ZXh0Pgo8L3N2Zz4K" alt="Logo" class="w-10 h-10 mr-3">
+                                <div>
+                                    <h1 class="text-xl font-bold text-gray-800">Comprovante M-53</h1>
+                                    <p class="text-sm text-gray-600">Sistema de Geração de Comprovantes</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informações do Pagamento -->
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <h3 class="font-semibold text-gray-700 mb-3">Detalhes do Pagamento</h3>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Tipo:</span>
+                                        <span id="receiptType" class="font-medium">PIX</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Valor:</span>
+                                        <span id="receiptAmount" class="font-medium text-green-600">R$ 1.250,00</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Data/Hora:</span>
+                                        <span id="receiptDateTime" class="font-medium">15/09/2025 14:30:15</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Status:</span>
+                                        <span id="receiptStatus" class="font-medium text-green-600">✅ Aprovado</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-700 mb-3">Transação</h3>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Nº Autenticação:</span>
+                                        <span id="receiptAuthNumber" class="font-medium">AUTH123456789</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">End to End:</span>
+                                        <span id="receiptEndToEnd" class="font-medium">E12345678920250915</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Taxas:</span>
+                                        <span class="font-medium">R$ 0,00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dados do Pagador -->
+                        <div class="mb-6">
+                            <h3 class="font-semibold text-gray-700 mb-3">Dados do Pagador</h3>
+                            <div class="bg-gray-50 p-4 rounded">
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-gray-600">Nome:</span>
+                                        <p id="receiptPayerName" class="font-medium">João Silva Santos</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">CPF/CNPJ:</span>
+                                        <p id="receiptPayerDocument" class="font-medium">123.456.789-01</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">Banco:</span>
+                                        <p id="receiptPayerBank" class="font-medium">Banco do Brasil (001)</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">Ag/Conta:</span>
+                                        <p id="receiptPayerAccount" class="font-medium">1234-5 / 12345-6</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dados do Beneficiário -->
+                        <div class="mb-6">
+                            <h3 class="font-semibold text-gray-700 mb-3">Dados do Beneficiário</h3>
+                            <div class="bg-gray-50 p-4 rounded">
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-gray-600">Nome:</span>
+                                        <p id="receiptBeneficiaryName" class="font-medium">Empresa Exemplo LTDA</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">CNPJ:</span>
+                                        <p id="receiptBeneficiaryDocument" class="font-medium">12.345.678/0001-90</p>
+                                    </div>
+                                    <div id="receiptPixKey">
+                                        <span class="text-gray-600">Chave PIX:</span>
+                                        <p id="receiptPixKeyValue" class="font-medium">exemplo@empresa.com.br</p>
+                                    </div>
+                                    <div id="receiptBankData" style="display: none;">
+                                        <span class="text-gray-600">Banco:</span>
+                                        <p id="receiptBeneficiaryBank" class="font-medium">Caixa Econômica (104)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seção específica por tipo -->
+                        <div id="receiptBoletoSection" style="display: none;" class="mb-6">
+                            <h3 class="font-semibold text-gray-700 mb-3">Dados do Boleto</h3>
+                            <div class="bg-yellow-50 p-4 rounded">
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-gray-600">Documento:</span>
+                                        <p id="receiptBoletoDocument" class="font-medium">BOL123456789</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">Vencimento:</span>
+                                        <p id="receiptBoletoDueDate" class="font-medium">15/09/2025</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">Valor do Documento:</span>
+                                        <p id="receiptBoletoOriginalValue" class="font-medium">R$ 1.200,00</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">Juros/Multa:</span>
+                                        <p id="receiptBoletoFees" class="font-medium">R$ 50,00</p>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <span class="text-gray-600 text-xs">Código de Barras:</span>
+                                    <p id="receiptBoletoBarcode" class="font-mono text-xs">12345.67890 12345.678901 12345.678901 1 23450000125000</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="receiptCardSection" style="display: none;" class="mb-6">
+                            <h3 class="font-semibold text-gray-700 mb-3">Dados do Cartão</h3>
+                            <div class="bg-blue-50 p-4 rounded">
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-gray-600">Bandeira:</span>
+                                        <p id="receiptCardBrand" class="font-medium">Visa</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">Final:</span>
+                                        <p id="receiptCardLastDigits" class="font-medium">**** 1234</p>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <span class="text-gray-600">Parcelas:</span>
+                                        <p id="receiptCardInstallments" class="font-medium">1x de R$ 1.250,00</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Descrição -->
+                        <div class="mb-6">
+                            <h3 class="font-semibold text-gray-700 mb-3">Descrição</h3>
+                            <p id="receiptDescription" class="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                                Pagamento referente à prestação de serviços de consultoria tecnológica - Período: Setembro/2025
+                            </p>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="border-t-2 border-gray-200 pt-4 text-center">
+                            <p class="text-xs text-gray-500 mb-2">
+                                Este comprovante foi gerado eletronicamente e possui validade legal
+                            </p>
+                            <p class="text-xs text-gray-400">
+                                Comprovante M-53 | Gerado em: <span id="receiptGeneratedAt">15/09/2025 às 14:30:15</span>
+                            </p>
+                            <div class="mt-3 text-xs text-gray-400">
+                                <p>Sistema de Geração de Comprovantes</p>
+                                <p>Para verificação da autenticidade: <span id="receiptAuthCode">auth123456789</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicializar data/hora atual
+        function initDateTime() {
+            const now = new Date();
+            const isoString = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            document.getElementById('dateTime').value = isoString;
+        }
+
+        // Atualizar comprovante
+        function updateReceipt() {
+            const paymentType = document.getElementById('paymentType').value;
+            const status = document.getElementById('status').value;
+            const amount = parseFloat(document.getElementById('amount').value || 0);
+            const dateTime = new Date(document.getElementById('dateTime').value);
+
+            // Atualizar tipo
+            document.getElementById('receiptType').textContent = paymentType;
+
+            // Atualizar valor
+            document.getElementById('receiptAmount').textContent = `R$ ${amount.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+            // Atualizar data/hora
+            const formattedDateTime = dateTime.toLocaleString('pt-BR');
+            document.getElementById('receiptDateTime').textContent = formattedDateTime;
+            document.getElementById('receiptGeneratedAt').textContent = formattedDateTime;
+
+            // Atualizar status
+            const statusElement = document.getElementById('receiptStatus');
+            if (status === 'Aprovado') {
+                statusElement.textContent = '✅ Aprovado';
+                statusElement.className = 'font-medium text-green-600';
+            } else if (status === 'Pendente') {
+                statusElement.textContent = '🕒 Pendente';
+                statusElement.className = 'font-medium text-yellow-600';
+            } else {
+                statusElement.textContent = '❌ Rejeitado';
+                statusElement.className = 'font-medium text-red-600';
+            }
+
+            // Atualizar dados de transação
+            document.getElementById('receiptAuthNumber').textContent = document.getElementById('authNumber').value;
+            document.getElementById('receiptEndToEnd').textContent = document.getElementById('endToEnd').value;
+            document.getElementById('receiptAuthCode').textContent = document.getElementById('authNumber').value.toLowerCase();
+
+            // Atualizar dados do pagador
+            document.getElementById('receiptPayerName').textContent = document.getElementById('payerName').value;
+            document.getElementById('receiptPayerDocument').textContent = document.getElementById('payerDocument').value;
+            document.getElementById('receiptPayerBank').textContent = document.getElementById('payerBank').value;
+            document.getElementById('receiptPayerAccount').textContent = `${document.getElementById('payerAgency').value} / ${document.getElementById('payerAccount').value}`;
+
+            // Atualizar dados do beneficiário
+            document.getElementById('receiptBeneficiaryName').textContent = document.getElementById('beneficiaryName').value;
+            document.getElementById('receiptBeneficiaryDocument').textContent = document.getElementById('beneficiaryDocument').value;
+
+            // Mostrar/ocultar campos específicos
+            const pixKeyDiv = document.getElementById('receiptPixKey');
+            const bankDataDiv = document.getElementById('receiptBankData');
+            const boletoSection = document.getElementById('receiptBoletoSection');
+            const cardSection = document.getElementById('receiptCardSection');
+
+            // Reset visibility
+            pixKeyDiv.style.display = 'none';
+            bankDataDiv.style.display = 'none';
+            boletoSection.style.display = 'none';
+            cardSection.style.display = 'none';
+
+            if (paymentType === 'PIX') {
+                pixKeyDiv.style.display = 'block';
+                document.getElementById('receiptPixKeyValue').textContent = document.getElementById('pixKey').value;
+            } else if (['TED', 'DOC'].includes(paymentType)) {
+                bankDataDiv.style.display = 'block';
+                document.getElementById('receiptBeneficiaryBank').textContent = document.getElementById('beneficiaryBank').value;
+            } else if (paymentType === 'Boleto') {
+                boletoSection.style.display = 'block';
+                document.getElementById('receiptBoletoDocument').textContent = document.getElementById('boletoDocument').value;
+
+                const dueDate = new Date(document.getElementById('boletoDueDate').value);
+                document.getElementById('receiptBoletoDueDate').textContent = dueDate.toLocaleDateString('pt-BR');
+
+                const originalValue = parseFloat(document.getElementById('boletoOriginalValue').value || 0);
+                document.getElementById('receiptBoletoOriginalValue').textContent = `R$ ${originalValue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+                const fees = parseFloat(document.getElementById('boletoFees').value || 0);
+                document.getElementById('receiptBoletoFees').textContent = `R$ ${fees.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+                document.getElementById('receiptBoletoBarcode').textContent = document.getElementById('boletoBarcode').value;
+            } else if (paymentType === 'Cartão') {
+                cardSection.style.display = 'block';
+                document.getElementById('receiptCardBrand').textContent = document.getElementById('cardBrand').value;
+                document.getElementById('receiptCardLastDigits').textContent = `**** ${document.getElementById('cardLastDigits').value}`;
+
+                const installments = parseInt(document.getElementById('cardInstallments').value || 1);
+                const installmentValue = amount / installments;
+                document.getElementById('receiptCardInstallments').textContent =
+                    `${installments}x de R$ ${installmentValue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            }
+
+            // Atualizar descrição
+            document.getElementById('receiptDescription').textContent = document.getElementById('description').value;
+
+            // Atualizar campos do formulário baseado no tipo
+            updateFormFields();
+        }
+
+        // Atualizar campos do formulário baseado no tipo
+        function updateFormFields() {
+            const paymentType = document.getElementById('paymentType').value;
+
+            // Campos PIX/Banco
+            document.getElementById('pixKeyField').style.display = paymentType === 'PIX' ? 'block' : 'none';
+            document.getElementById('bankFields').style.display = ['TED', 'DOC'].includes(paymentType) ? 'block' : 'none';
+
+            // Campos específicos
+            document.getElementById('boletoFields').style.display = paymentType === 'Boleto' ? 'block' : 'none';
+            document.getElementById('cardFields').style.display = paymentType === 'Cartão' ? 'block' : 'none';
+        }
+
+        // Salvar template
+        function saveTemplate() {
+            const template = {
+                paymentType: document.getElementById('paymentType').value,
+                status: document.getElementById('status').value,
+                amount: document.getElementById('amount').value,
+                authNumber: document.getElementById('authNumber').value,
+                endToEnd: document.getElementById('endToEnd').value,
+                payerName: document.getElementById('payerName').value,
+                payerDocument: document.getElementById('payerDocument').value,
+                payerBank: document.getElementById('payerBank').value,
+                payerAgency: document.getElementById('payerAgency').value,
+                payerAccount: document.getElementById('payerAccount').value,
+                beneficiaryName: document.getElementById('beneficiaryName').value,
+                beneficiaryDocument: document.getElementById('beneficiaryDocument').value,
+                pixKey: document.getElementById('pixKey').value,
+                beneficiaryBank: document.getElementById('beneficiaryBank').value,
+                beneficiaryAccount: document.getElementById('beneficiaryAccount').value,
+                description: document.getElementById('description').value,
+                boletoDocument: document.getElementById('boletoDocument').value,
+                boletoDueDate: document.getElementById('boletoDueDate').value,
+                boletoOriginalValue: document.getElementById('boletoOriginalValue').value,
+                boletoFees: document.getElementById('boletoFees').value,
+                boletoDiscount: document.getElementById('boletoDiscount').value,
+                boletoBarcode: document.getElementById('boletoBarcode').value,
+                cardBrand: document.getElementById('cardBrand').value,
+                cardLastDigits: document.getElementById('cardLastDigits').value,
+                cardInstallments: document.getElementById('cardInstallments').value
+            };
+
+            localStorage.setItem('comprovanteTemplate', JSON.stringify(template));
+            alert('✅ Template salvo com sucesso!');
+        }
+
+        // Carregar template
+        function loadTemplate() {
+            const template = localStorage.getItem('comprovanteTemplate');
+            if (template) {
+                const data = JSON.parse(template);
+                Object.keys(data).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) element.value = data[key];
+                });
+                updateReceipt();
+                alert('✅ Template carregado com sucesso!');
+            } else {
+                alert('❌ Nenhum template salvo encontrado!');
+            }
+        }
+
+        // Limpar formulário
+        function clearForm() {
+            if (confirm('Tem certeza que deseja limpar todos os campos?')) {
+                const inputs = document.querySelectorAll('input, select, textarea');
+                inputs.forEach(input => {
+                    if (input.type === 'datetime-local') {
+                        initDateTime();
+                    } else if (input.type === 'number') {
+                        input.value = '0';
+                    } else {
+                        input.value = '';
+                    }
+                });
+                updateReceipt();
+            }
+        }
+
+        // Gerar dados aleatórios
+        function generateRandom() {
+            const names = ['João Silva', 'Maria Santos', 'Pedro Oliveira', 'Ana Costa', 'Carlos Lima'];
+            const companies = ['Empresa Tech LTDA', 'Consultoria Digital ME', 'Inovação Corp', 'Soluções SA'];
+            const banks = ['Banco do Brasil (001)', 'Caixa Econômica (104)', 'Itaú (341)', 'Bradesco (237)'];
+
+            document.getElementById('payerName').value = names[Math.floor(Math.random() * names.length)];
+            document.getElementById('beneficiaryName').value = companies[Math.floor(Math.random() * companies.length)];
+            document.getElementById('payerBank').value = banks[Math.floor(Math.random() * banks.length)];
+            document.getElementById('amount').value = (Math.random() * 10000 + 100).toFixed(2);
+            document.getElementById('authNumber').value = 'AUTH' + Math.random().toString().substr(2, 9);
+            document.getElementById('endToEnd').value = 'E' + Math.random().toString().substr(2, 15);
+
+            updateReceipt();
+            alert('🎲 Dados aleatórios gerados!');
+        }
+
+        // Visualizar comprovante
+        function previewReceipt() {
+            updateReceipt();
+            document.querySelector('.receipt-container').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Imprimir comprovante
+        function printReceipt() {
+            updateReceipt();
+            setTimeout(() => {
+                window.print();
+            }, 500);
+        }
+
+        // Event listeners
+        document.getElementById('paymentType').addEventListener('change', updateFormFields);
+
+        // Auto-atualizar quando campos mudarem
+        const autoUpdateInputs = document.querySelectorAll('input, select, textarea');
+        autoUpdateInputs.forEach(input => {
+            input.addEventListener('input', updateReceipt);
+            input.addEventListener('change', updateReceipt);
+        });
+
+        // Inicializar
+        initDateTime();
+        updateFormFields();
+        updateReceipt();
+    </script>
+</body>
+</html>

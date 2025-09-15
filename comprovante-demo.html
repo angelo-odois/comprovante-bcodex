@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprovante M-53 - Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            body { background: white !important; }
+            .no-print { display: none !important; }
+        }
+        .receipt-container {
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-2xl mx-auto">
+        <!-- Controles de Demo -->
+        <div class="no-print mb-6 bg-white p-4 rounded-lg shadow">
+            <h2 class="text-lg font-bold mb-4">Demo - Comprovante M-53</h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tipo de Pagamento:</label>
+                    <select id="paymentType" class="w-full border rounded px-3 py-2">
+                        <option value="PIX">PIX</option>
+                        <option value="TED">TED</option>
+                        <option value="DOC">DOC</option>
+                        <option value="Boleto">Boleto</option>
+                        <option value="Cartão">Cartão</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Status:</label>
+                    <select id="status" class="w-full border rounded px-3 py-2">
+                        <option value="Aprovado">Aprovado</option>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Rejeitado">Rejeitado</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="updateReceipt()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Atualizar Comprovante
+                </button>
+                <button onclick="window.print()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Imprimir
+                </button>
+            </div>
+        </div>
+
+        <!-- Comprovante -->
+        <div id="receipt" class="receipt-container rounded-lg p-6">
+            <!-- Header -->
+            <div class="text-center border-b-2 border-gray-200 pb-4 mb-6">
+                <div class="flex items-center justify-center mb-2">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzM3NTFmZiIvPgo8dGV4dCB4PSIyMCIgeT0iMjYiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5NPC90ZXh0Pgo8L3N2Zz4K" alt="Logo" class="w-10 h-10 mr-3">
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">Comprovante M-53</h1>
+                        <p class="text-sm text-gray-600">Sistema de Geração de Comprovantes</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações do Pagamento -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-3">Detalhes do Pagamento</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Tipo:</span>
+                            <span id="receiptType" class="font-medium">PIX</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Valor:</span>
+                            <span class="font-medium text-green-600">R$ 1.250,00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Data/Hora:</span>
+                            <span class="font-medium" id="dateTime">15/09/2025 14:30:15</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Status:</span>
+                            <span id="receiptStatus" class="font-medium text-green-600">✅ Aprovado</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-3">Transação</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Nº Autenticação:</span>
+                            <span class="font-medium">AUTH123456789</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">End to End:</span>
+                            <span class="font-medium">E12345678920250915</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Taxas:</span>
+                            <span class="font-medium">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados do Pagador -->
+            <div class="mb-6">
+                <h3 class="font-semibold text-gray-700 mb-3">Dados do Pagador</h3>
+                <div class="bg-gray-50 p-4 rounded">
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">Nome:</span>
+                            <p class="font-medium">João Silva Santos</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">CPF/CNPJ:</span>
+                            <p class="font-medium">123.456.789-01</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Banco:</span>
+                            <p class="font-medium">Banco do Brasil (001)</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Ag/Conta:</span>
+                            <p class="font-medium">1234-5 / 12345-6</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados do Beneficiário -->
+            <div class="mb-6">
+                <h3 class="font-semibold text-gray-700 mb-3">Dados do Beneficiário</h3>
+                <div class="bg-gray-50 p-4 rounded">
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">Nome:</span>
+                            <p class="font-medium">Empresa Exemplo LTDA</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">CNPJ:</span>
+                            <p class="font-medium">12.345.678/0001-90</p>
+                        </div>
+                        <div id="pixKey">
+                            <span class="text-gray-600">Chave PIX:</span>
+                            <p class="font-medium">exemplo@empresa.com.br</p>
+                        </div>
+                        <div id="bankData" style="display: none;">
+                            <span class="text-gray-600">Banco:</span>
+                            <p class="font-medium">Caixa Econômica (104)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção específica por tipo -->
+            <div id="boletoSection" style="display: none;" class="mb-6">
+                <h3 class="font-semibold text-gray-700 mb-3">Dados do Boleto</h3>
+                <div class="bg-yellow-50 p-4 rounded">
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">Documento:</span>
+                            <p class="font-medium">BOL123456789</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Vencimento:</span>
+                            <p class="font-medium">15/09/2025</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Valor do Documento:</span>
+                            <p class="font-medium">R$ 1.200,00</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Juros/Multa:</span>
+                            <p class="font-medium">R$ 50,00</p>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="text-gray-600 text-xs">Código de Barras:</span>
+                        <p class="font-mono text-xs">12345.67890 12345.678901 12345.678901 1 23450000125000</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cardSection" style="display: none;" class="mb-6">
+                <h3 class="font-semibold text-gray-700 mb-3">Dados do Cartão</h3>
+                <div class="bg-blue-50 p-4 rounded">
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">Bandeira:</span>
+                            <p class="font-medium">Visa</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Final:</span>
+                            <p class="font-medium">**** 1234</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Parcelas:</span>
+                            <p class="font-medium">1x de R$ 1.250,00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Descrição -->
+            <div class="mb-6">
+                <h3 class="font-semibold text-gray-700 mb-3">Descrição</h3>
+                <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                    Pagamento referente à prestação de serviços de consultoria tecnológica - Período: Setembro/2025
+                </p>
+            </div>
+
+            <!-- Footer -->
+            <div class="border-t-2 border-gray-200 pt-4 text-center">
+                <p class="text-xs text-gray-500 mb-2">
+                    Este comprovante foi gerado eletronicamente e possui validade legal
+                </p>
+                <p class="text-xs text-gray-400">
+                    Comprovante M-53 | Gerado em: <span id="generatedAt">15/09/2025 às 14:30:15</span>
+                </p>
+                <div class="mt-3 text-xs text-gray-400">
+                    <p>Sistema de Geração de Comprovantes</p>
+                    <p>Para verificação da autenticidade: auth123456789</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateReceipt() {
+            const paymentType = document.getElementById('paymentType').value;
+            const status = document.getElementById('status').value;
+
+            // Atualizar tipo
+            document.getElementById('receiptType').textContent = paymentType;
+
+            // Atualizar status
+            const statusElement = document.getElementById('receiptStatus');
+            if (status === 'Aprovado') {
+                statusElement.textContent = '✅ Aprovado';
+                statusElement.className = 'font-medium text-green-600';
+            } else if (status === 'Pendente') {
+                statusElement.textContent = '🕒 Pendente';
+                statusElement.className = 'font-medium text-yellow-600';
+            } else {
+                statusElement.textContent = '❌ Rejeitado';
+                statusElement.className = 'font-medium text-red-600';
+            }
+
+            // Mostrar/ocultar seções específicas
+            document.getElementById('pixKey').style.display = paymentType === 'PIX' ? 'block' : 'none';
+            document.getElementById('bankData').style.display = ['TED', 'DOC'].includes(paymentType) ? 'block' : 'none';
+            document.getElementById('boletoSection').style.display = paymentType === 'Boleto' ? 'block' : 'none';
+            document.getElementById('cardSection').style.display = paymentType === 'Cartão' ? 'block' : 'none';
+
+            // Atualizar data/hora atual
+            const now = new Date();
+            const dateTimeStr = now.toLocaleString('pt-BR');
+            document.getElementById('dateTime').textContent = dateTimeStr;
+            document.getElementById('generatedAt').textContent = dateTimeStr;
+        }
+
+        // Inicializar
+        updateReceipt();
+    </script>
+</body>
+</html>

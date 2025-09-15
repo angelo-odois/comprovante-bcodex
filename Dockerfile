@@ -17,15 +17,11 @@ RUN npm install
 # Copiar código fonte
 COPY . .
 
-# Remover dependências problemáticas
-RUN npm uninstall lovable-tagger
-RUN rm -f postcss.config.js postcss.config.mjs
+# Configurar para produção
+ENV NODE_ENV=production
 
-# Criar um build simples
-RUN mkdir -p dist
-RUN cp index.html dist/
-RUN cp -r public/* dist/ 2>/dev/null || true
-RUN echo "Build simples criado"
+# Tentar build real primeiro, se falhar usar fallback
+RUN npm run build || (mkdir -p dist && cp -r public/* dist/ 2>/dev/null && cp production.html dist/index.html && cp comprovante-demo.html dist/ && cp editor-comprovante.html dist/)
 
 # Stage de produção com Nginx
 FROM nginx:alpine AS production

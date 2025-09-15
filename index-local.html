@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprovante M-53 - Sistema Local</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: Inter, system-ui, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="flex items-center justify-center mb-4">
+                    <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                        <span class="text-white font-bold text-xl">M</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Comprovante M-53</h1>
+                        <p class="text-sm text-gray-600">Sistema Local de Desenvolvimento</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Card -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                <div class="flex items-center justify-center mb-4">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span class="text-blue-600 text-2xl">💻</span>
+                    </div>
+                </div>
+                <h2 class="text-xl font-semibold text-blue-800 text-center mb-2">Ambiente Local</h2>
+                <p class="text-blue-700 text-center text-sm">Sistema rodando localmente para desenvolvimento e testes</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-3">
+                <a href="./editor-comprovante.html" class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors block text-center">
+                    ✏️ Editor de Comprovantes (Principal)
+                </a>
+                <a href="./comprovante-demo.html" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors block text-center">
+                    🧾 Demo Simples do Comprovante
+                </a>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="window.open('./editor-comprovante.html', '_blank')" class="bg-purple-600 text-white py-2 px-3 rounded-lg font-medium hover:bg-purple-700 transition-colors text-sm">
+                        🔗 Abrir em Nova Aba
+                    </button>
+                    <button onclick="copyLink()" class="bg-gray-600 text-white py-2 px-3 rounded-lg font-medium hover:bg-gray-700 transition-colors text-sm">
+                        📋 Copiar Link
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Info -->
+            <div class="mt-6 space-y-2 text-sm">
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span class="text-gray-600 font-medium">Versão:</span>
+                    <span class="text-gray-800 font-semibold">Desenvolvimento</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span class="text-gray-600 font-medium">Ambiente:</span>
+                    <span class="text-green-600 font-semibold">🟢 Local</span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                    <span class="text-gray-600 font-medium">Última atualização:</span>
+                    <span class="text-gray-800 font-semibold" id="currentTime"></span>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="mt-8 p-4 bg-gray-50 rounded-lg">
+                <h3 class="font-semibold text-gray-800 mb-3">🚀 Funcionalidades</h3>
+                <ul class="text-sm text-gray-600 space-y-1">
+                    <li>✅ Editor completo de comprovantes</li>
+                    <li>✅ Suporte a PIX, TED, DOC, Boleto e Cartão</li>
+                    <li>✅ Preview em tempo real</li>
+                    <li>✅ Impressão otimizada</li>
+                    <li>✅ Salvamento de templates</li>
+                    <li>✅ Geração de dados aleatórios</li>
+                </ul>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+                <p class="text-xs text-gray-500 mb-2">
+                    Sistema de Geração de Comprovantes - Versão Local
+                </p>
+                <p class="text-xs text-gray-400">
+                    Para testes e desenvolvimento | <span id="updateTime"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('pt-BR');
+            document.getElementById('currentTime').textContent = timeString;
+            document.getElementById('updateTime').textContent = timeString;
+        }
+
+        function copyLink() {
+            const url = window.location.href.replace('/index-local.html', '') + '/editor-comprovante.html';
+            navigator.clipboard.writeText(url).then(() => {
+                alert('✅ Link copiado para a área de transferência!');
+            }).catch(() => {
+                prompt('📋 Copie este link:', url);
+            });
+        }
+
+        // Atualizar horário a cada segundo
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Detectar se está sendo executado localmente
+        if (window.location.protocol === 'file:') {
+            document.querySelector('h2').innerHTML = '📁 Arquivo Local';
+            document.querySelector('p').innerHTML = 'Aberto diretamente do sistema de arquivos';
+        }
+    </script>
+</body>
+</html>
